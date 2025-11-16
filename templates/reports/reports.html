@@ -1,0 +1,264 @@
+<!-- templates/reports.html -->
+{% extends "reports_base.html" %}
+
+{% set page_title = "Статистика" %}
+{% set active_report = "dashboard" %}
+
+
+
+{% block reports_content %}
+    
+
+    <!-- Статистика -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.total_cars }}</div>
+            <div class="stat-label">Всего автомобилей</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.active_cars }}</div>
+            <div class="stat-label">Активных</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.total_maintenance }}</div>
+            <div class="stat-label">ТО выполнено</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ "%.2f"|format(stats.total_cost) }} ₽</div>
+            <div class="stat-label">Общие затраты</div>
+        </div>
+    </div>
+
+    <!-- Графики -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Аналитика</h3>
+        </div>
+        <div class="card-body">
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <h4>Распределение по статусу автомобилей</h4>
+                    <canvas id="carStatusChart" width="400" height="200"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <h4>Распределение по приоритету ТО</h4>
+                    <canvas id="priorityChart" width="400" height="200"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <h4>Затраты по типам ТО</h4>
+                    <canvas id="costChart" width="400" height="200"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <h4>Производительность механиков</h4>
+                    <canvas id="mechanicChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Таблицы статистики -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Детальная статистика</h3>
+        </div>
+        <div class="card-body">
+            <div class="stats-tabs">
+                <div class="tab-content active">
+                    <h4>Статистика по типам ТО</h4>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Тип ТО</th>
+                                    <th>Количество</th>
+                                    <th>Общая стоимость</th>
+                                    <th>Средняя стоимость</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for name, count, total_cost in stats.maintenance_types_stats %}
+                                    <tr>
+                                        <td>{{ name }}</td>
+                                        <td>{{ count }}</td>
+                                        <td>{{ "%.2f"|format(total_cost or 0) }} ₽</td>
+                                        <td>{{ "%.2f"|format((total_cost or 0) / count if count > 0 else 0) }} ₽</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // (Скрипты для графиков остаются без изменений)
+        document.addEventListener('DOMContentLoaded', function() {
+            // График статуса автомобилей
+            const carStatusCtx = document.getElementById('carStatusChart').getContext('2d');
+            new Chart(carStatusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Активные', 'На обслуживании', 'Выведенные'],
+                    datasets: [{
+                        data: [{{ stats.active_cars }}, {{ stats.maintenance_cars }}, {{ stats.retired_cars }}],
+                        backgroundColor: [
+                            'rgba(40, 167, 69, 0.8)',
+                            'rgba(255, 193, 7, 0.8)',
+                            'rgba(220, 53, 69, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // График приоритетов
+            const priorityCtx = document.getElementById('priorityChart').getContext('2d');
+            new Chart(priorityCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Критический', 'Высокий', 'Средний', 'Низкий'],
+                    datasets: [{
+                        label: 'Количество работ',
+                        data: [
+                            {{ stats.priority_stats.get('critical', 0) }},
+                            {{ stats.priority_stats.get('high', 0) }},
+                            {{ stats.priority_stats.get('medium', 0) }},
+                            {{ stats.priority_stats.get('low', 0) }}
+                        ],
+                        backgroundColor: [
+                            'rgba(220, 53, 69, 0.8)',
+                            'rgba(255, 193, 7, 0.8)',
+                            'rgba(0, 123, 255, 0.8)',
+                            'rgba(40, 167, 69, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // График затрат по типам ТО
+            const costCtx = document.getElementById('costChart').getContext('2d');
+            const costLabels = [];
+            const costData = [];
+            {% for name, count, total_cost in stats.maintenance_types_stats %}
+                costLabels.push('{{ name }}');
+                costData.push({{ total_cost or 0 }});
+            {% endfor %}
+
+            new Chart(costCtx, {
+                type: 'pie',
+                data: {
+                    labels: costLabels,
+                    datasets: [{
+                        data: costData,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.8)',
+                            'rgba(54, 162, 235, 0.8)',
+                            'rgba(255, 205, 86, 0.8)',
+                            'rgba(75, 192, 192, 0.8)',
+                            'rgba(153, 102, 255, 0.8)',
+                            'rgba(255, 159, 64, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // График производительности механиков
+            const mechanicCtx = document.getElementById('mechanicChart').getContext('2d');
+            const mechanicLabels = [];
+            const mechanicCounts = [];
+            const mechanicCosts = [];
+            {% for name, count, total_cost in stats.mechanic_stats %}
+                mechanicLabels.push('{{ name }}');
+                mechanicCounts.push({{ count }});
+                mechanicCosts.push({{ total_cost or 0 }});
+            {% endfor %}
+
+            new Chart(mechanicCtx, {
+                type: 'line',
+                data: {
+                    labels: mechanicLabels,
+                    datasets: [
+                        {
+                            label: 'Количество работ',
+                            data: mechanicCounts,
+                            borderColor: 'rgb(75, 192, 192)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Общая стоимость (₽)',
+                            data: mechanicCosts,
+                            borderColor: 'rgb(255, 99, 132)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left'
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+        // Функция для обновления статистики (заменяет текущую логику generateReport)
+        function updateStats() {
+            const dateFrom = document.getElementById('statsDateFrom').value;
+            const dateTo = document.getElementById('statsDateTo').value;
+            const carId = document.getElementById('statsCarFilter').value;
+
+            // AJAX-запрос на сервер для получения обновленных данных статистики
+            // и обновления DOM-элементов и графиков
+            console.log("Обновление статистики с параметрами:", { dateFrom, dateTo, carId });
+            // Реализация запроса и обновления...
+        }
+    </script>
+
+{% endblock %}

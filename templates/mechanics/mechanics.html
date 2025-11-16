@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block title %}Механики - {{ system_info.system.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Заголовок -->
+    <div class="page-header">
+        <div class="page-title-section">
+            <h1 class="card-title"><i class="fas fa-tools"></i> Механики</h1>
+            <p class="page-subtitle">Управление и отслеживание работы механиков</p>
+        </div>
+    </div>
+
+    <!-- Статистика -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ stats.total_mechanics }}</div>
+                <div class="stat-label">Всего механиков</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-play-circle"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ stats.active_mechanics }}</div>
+                <div class="stat-label">Активных</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-user-slash"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ stats.inactive_mechanics }}</div>
+                <div class="stat-label">Заблокированных</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-wrench"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ stats.total_maintenance }}</div>
+                <div class="stat-label">Всего ТО</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Карточка с таблицей механиков -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-list"></i> Список механиков</h3>
+        </div>
+        <div class="card-body">
+            {% if mechanics %}
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ФИО</th>
+                            <th>Контакты</th>
+                            <th>Статус</th>
+                            <th>Выполнено ТО</th>
+                            <th>Текущая нагрузка</th>
+                            <th>Общая стоимость работ</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mechanic in mechanics %}
+                        <tr>
+                            <td data-label="ФИО">
+                                <div class="user-info">
+                                    <div class="user-avatar-small">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <div class="user-details">
+                                        <strong>{{ mechanic.fullName }}</strong>
+                                        <small class="text-muted">{{ mechanic.username }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td data-label="Контакты">
+                                <div class="contact-info">
+                                    <i class="fas fa-envelope"></i> {{ mechanic.mail or '—' }}<br>
+                                    <i class="fas fa-phone"></i> {{ mechanic.phone or '—' }}
+                                </div>
+                            </td>
+                            <td data-label="Статус">
+                                <span class="badge {{ 'badge-success' if mechanic.isBlocked == 'false' else 'badge-danger' }}">
+                                    {{ 'Активный' if mechanic.isBlocked == 'false' else 'Заблокирован' }}
+                                </span>
+                            </td>
+                            <td data-label="Выполнено ТО">
+                                <span class="badge badge-info">{{ mechanic.completed_maintenance_count or 0 }}</span>
+                            </td>
+                            <td data-label="Текущая нагрузка">
+                                <span class="badge badge-warning">{{ mechanic.current_workload or 0 }}</span>
+                            </td>
+                            <td data-label="Общая стоимость работ">
+                                {{ "{:,.2f}".format(mechanic.total_earnings) }} ₽
+                            </td>
+                            <td data-label="Действия" class="table-actions">
+                                <a href="{{ url_for('view_mechanic', mechanic_id=mechanic.userID) }}" 
+                                   class="btn btn-sm btn-outline" title="Просмотреть">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ url_for('maintenance_records') }}?user_id={{ mechanic.userID }}" 
+                                   class="btn btn-sm btn-outline" title="ТО">
+                                    <i class="fas fa-wrench"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="no-data">
+                <i class="fas fa-tools"></i>
+                <h3>Нет механиков</h3>
+                <p>Создайте первого механика, чтобы начать работу</p>
+                <button class="btn btn-primary" onclick="addMechanic()">
+                    <i class="fas fa-plus"></i>
+                    Добавить механика
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function addMechanic() {
+    window.location.href = '/mechanics/add';
+}
+</script>
+
+<style>
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.user-avatar-small {
+    width: 30px;
+    height: 30px;
+    background: var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    font-size: 0.8rem;
+}
+
+.user-details strong {
+    display: block;
+}
+
+.user-details small {
+    display: block;
+    font-size: 0.8rem;
+}
+
+.contact-info i {
+    margin-right: 0.25rem;
+    color: var(--text-light);
+}
+
+.table-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.table-actions .btn {
+    padding: 0.25rem 0.5rem;
+    min-width: auto;
+}
+
+.page-title-section {
+    flex: 1;
+}
+
+.page-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.page-subtitle {
+    color: var(--text-light);
+    margin: 0.25rem 0 0 0;
+}
+
+@media screen and (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .page-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .stats-container {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+    
+    .stat-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.5rem;
+        padding: 1rem;
+    }
+    
+    .stat-icon {
+        align-self: center;
+    }
+}
+</style>
+{% endblock %}

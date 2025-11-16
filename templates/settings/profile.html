@@ -1,0 +1,101 @@
+{% extends "settings_base.html" %}
+
+{% block page_title %}Настройки профиля{% endblock %}
+{% block active_page %}profile{% endblock %}
+
+{% block settings_content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Информация профиля</h3>
+    </div>
+    <div class="card-body">
+        <form method="POST" class="profile-form">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Полное имя *</label>
+                    <input type="text" name="full_name" class="form-control" 
+                           value="{{ current_user_obj.fullName }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Имя пользователя</label>
+                    <input type="text" class="form-control" 
+                           value="{{ current_user_obj.username }}" disabled>
+                    <small class="form-text">Имя пользователя нельзя изменить</small>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Email *</label>
+                    <input type="email" name="email" class="form-control" 
+                           value="{{ current_user_obj.mail }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Телефон</label>
+                    <input type="tel" name="phone" class="form-control" 
+                           value="{{ current_user_obj.phone }}">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Роль</label>
+                    <input type="text" class="form-control" 
+                           value="{{ {
+                               'admin': 'Администратор',
+                               'mechanic': 'Механик',
+                               'manager': 'Менеджер'
+                           }[current_user_obj.role] }}" disabled>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Дата регистрации</label>
+                    <input type="text" class="form-control" 
+                           value="{{ current_user_obj.passwordDate.strftime('%d.%m.%Y %H:%M') if current_user_obj.passwordDate else '—' }}" disabled>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    Сохранить изменения
+                </button>
+                <a href="{{ url_for('profile_settings') }}" class="btn btn-outline">
+                    <i class="fas fa-redo"></i>
+                    Сбросить
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Информация о безопасности</h3>
+    </div>
+    <div class="card-body">
+        <div class="security-info">
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Последний вход:</label>
+                    <span>{{ current_user_obj.passwordDate.strftime('%d.%m.%Y %H:%M') if current_user_obj.passwordDate else '—' }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Количество попыток входа:</label>
+                    <span>{{ current_user_obj.loginAttempts or 0 }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Статус блокировки:</label>
+                    <span class="badge {{ 'badge-danger' if current_user_obj.isBlocked == 'true' else 'badge-success' }}">
+                        {{ 'Заблокирован' if current_user_obj.isBlocked == 'true' else 'Активен' }}
+                    </span>
+                </div>
+                {% if current_user_obj.blockedUntil %}
+                <div class="info-item">
+                    <label>Блокировка до:</label>
+                    <span>{{ current_user_obj.blockedUntil.strftime('%d.%m.%Y %H:%M') }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}О системе - Верса{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h1 class="card-title">О системе "Верса"</h1>
+        </div>
+        <div class="card-body">
+            <div class="about-content">
+                <div class="about-section">
+                    <h2>Что такое "Верса"?</h2>
+                    <p>"Верса" - это современная система управления автотранспортом, разработанная для эффективного контроля за техническим состоянием транспортных средств, планирования технического обслуживания и управления механиками.</p>
+                </div>
+                
+                <div class="about-section">
+                    <h2>Основные возможности</h2>
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <i class="fas fa-car"></i>
+                            <h3>Управление транспортом</h3>
+                            <p>Отслеживание состояния, пробега и статуса каждого автомобиля</p>
+                        </div>
+                        <div class="feature-card">
+                            <i class="fas fa-wrench"></i>
+                            <h3>Планирование ТО</h3>
+                            <p>Автоматическое планирование технического обслуживания</p>
+                        </div>
+                        <div class="feature-card">
+                            <i class="fas fa-users"></i>
+                            <h3>Управление механиками</h3>
+                            <p>Назначение работ и контроль выполнения задач</p>
+                        </div>
+                        <div class="feature-card">
+                            <i class="fas fa-bell"></i>
+                            <h3>Напоминания</h3>
+                            <p>Автоматические уведомления о предстоящих работах</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="about-section">
+                    <h2>Преимущества</h2>
+                    <ul class="about-list">
+                        <li><i class="fas fa-check-circle"></i> Увеличение срока службы транспортных средств</li>
+                        <li><i class="fas fa-check-circle"></i> Снижение затрат на обслуживание</li>
+                        <li><i class="fas fa-check-circle"></i> Повышение безопасности эксплуатации</li>
+                        <li><i class="fas fa-check-circle"></i> Автоматизация рутинных задач</li>
+                        <li><i class="fas fa-check-circle"></i> Удобная аналитика и отчеты</li>
+                    </ul>
+                </div>
+                
+                <div class="about-section">
+                    <h2>Техническая информация</h2>
+                    <div class="tech-info">
+                        <p><strong>Версия:</strong> 1.0.0</p>
+                        <p><strong>Разработчик:</strong> Система управления транспортом</p>
+                        <p><strong>Технологии:</strong> Flask, SQLAlchemy, MySQL, HTML5, CSS3, JavaScript</p>
+                        <p><strong>Дата разработки:</strong> 2025 год</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

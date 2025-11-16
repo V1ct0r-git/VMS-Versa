@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Верса - Система управления автотранспортом{% endblock %}</title>
+    <!-- Подключаем CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="auth-body">
+    <div class="auth-container">
+        <div class="card auth-card">
+            {% block auth_header %}
+                <div class="auth-header">
+                    <div class="auth-logo">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <h1>Добро пожаловать в Верса</h1>
+                    <p>Система управления автотранспортом</p>
+                </div>
+            {% endblock %}
+
+            {% block auth_messages %}
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="auth-messages">
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}">
+                                    <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' if category == 'warning' else 'info-circle' if category == 'info' else 'times-circle' }}"></i>
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+            {% endblock %}
+
+            {% block auth_content %}{% endblock %} <!-- Этот блок будет заполнен дочерним шаблоном -->
+
+            {% block auth_footer %}
+                <div class="auth-footer">
+                    <p>Нет аккаунта? <a href="#" class="auth-link">Свяжитесь с администратором</a></p>
+                    <p><a href="#" class="auth-link">Забыли пароль?</a></p>
+                </div>
+            {% endblock %}
+        </div>
+    </div>
+
+    {% block auth_scripts %}{% endblock %}
+</body>
+</html>

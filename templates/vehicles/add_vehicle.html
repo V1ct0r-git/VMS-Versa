@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Добавить автомобиль - {{ system_info.system.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <div>
+            <h1 class="card-title">Добавить новый автомобиль</h1>
+            <p class="page-subtitle">Заполните информацию о транспортном средстве</p>
+        </div>
+        <div>
+            <a href="{{ url_for('vehicles') }}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i>
+                Назад к списку
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Информация об автомобиле</h3>
+        </div>
+        <div class="card-body">
+            <form method="POST" class="vehicle-form" id="vehicleForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Марка *</label>
+                        <input type="text" name="brand" class="form-control" 
+                               placeholder="Введите марку автомобиля" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Модель *</label>
+                        <input type="text" name="model" class="form-control" 
+                               placeholder="Введите модель автомобиля" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Год выпуска *</label>
+                        <input type="number" name="year" class="form-control" 
+                               placeholder="2023" min="1990" max="2030" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Государственный номер *</label>
+                        <input type="text" name="license_plate" class="form-control" 
+                               placeholder="А123ВС" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">VIN-номер *</label>
+                        <input type="text" name="vin" class="form-control" 
+                               placeholder="17-значный VIN-номер" maxlength="17">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Номер двигателя *</label>
+                        <input type="text" name="engine_number" class="form-control" 
+                               placeholder="Номер двигателя">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Цвет *</label>
+                        <input type="text" name="color" class="form-control" 
+                               placeholder="Цвет автомобиля">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Мощность (л.с.) *</label>
+                        <input type="number" name="power" class="form-control" 
+                               placeholder="150" min="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Пробег (км)</label>
+                        <input type="number" name="mileage" class="form-control" 
+                               placeholder="0" min="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Статус</label>
+                        <select name="status" class="form-control">
+                            <option value="Active">Активный</option>
+                            <option value="Inactive">Неактивный</option>
+                            <option value="Maintenance">На ТО</option>
+                            <option value="Retired">Выбыл</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label class="form-label">Примечания</label>
+                        <textarea name="notes" class="form-control" rows="4" 
+                                  placeholder="Дополнительная информация об автомобиле"></textarea>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Добавить автомобиль
+                    </button>
+                    <a href="{{ url_for('vehicles') }}" class="btn btn-outline">
+                        <i class="fas fa-times"></i>
+                        Отмена
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('vehicleForm').addEventListener('submit', function(e) {
+    const brand = document.querySelector('input[name="brand"]').value.trim();
+    const model = document.querySelector('input[name="model"]').value.trim();
+    const year = document.querySelector('input[name="year"]').value;
+    const licensePlate = document.querySelector('input[name="license_plate"]').value.trim();
+    
+    if (!brand || !model || !year || !licensePlate) {
+        e.preventDefault();
+        alert('Пожалуйста, заполните все обязательные поля!');
+        return false;
+    }
+    
+    // Проверка года
+    const currentYear = new Date().getFullYear();
+    if (year < 1990 || year > currentYear + 1) {
+        e.preventDefault();
+        alert('Год выпуска должен быть между 1990 и ' + (currentYear + 1) + ' годом!');
+        return false;
+    }
+    
+    // Проверка VIN (17 символов)
+    const vin = document.querySelector('input[name="vin"]').value.trim();
+    if (vin && vin.length !== 17) {
+        e.preventDefault();
+        alert('VIN-номер должен содержать 17 символов!');
+        return false;
+    }
+});
+
+// Добавляем валидацию в реальном времени
+document.addEventListener('DOMContentLoaded', function() {
+    const yearInput = document.querySelector('input[name="year"]');
+    const vinInput = document.querySelector('input[name="vin"]');
+    
+    yearInput.addEventListener('blur', function() {
+        const year = parseInt(this.value);
+        const currentYear = new Date().getFullYear();
+        if (year && (year < 1990 || year > currentYear + 1)) {
+            this.setCustomValidity('Год должен быть между 1990 и ' + (currentYear + 1));
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+    
+    vinInput.addEventListener('blur', function() {
+        const vin = this.value.trim();
+        if (vin && vin.length !== 17) {
+            this.setCustomValidity('VIN должен содержать 17 символов');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+});
+</script>
+{% endblock %}

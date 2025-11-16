@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Контакты - Верса{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h1 class="card-title">Контакты и поддержка</h1>
+        </div>
+        <div class="card-body">
+            <div class="contact-content">
+                <div class="contact-intro">
+                    <p>Если у вас возникли вопросы по работе системы или вам нужна техническая поддержка, свяжитесь с нами удобным для вас способом.</p>
+                </div>
+                
+                <div class="contact-grid">
+                    <div class="contact-card">
+                        <i class="fas fa-phone"></i>
+                        <h3>Телефон поддержки</h3>
+                        <p>+7 (XXX) XXX-XX-XX</p>
+                        <p>Рабочие дни: Пн-Пт, 9:00-18:00</p>
+                    </div>
+                    
+                    <div class="contact-card">
+                        <i class="fas fa-envelope"></i>
+                        <h3>Электронная почта</h3>
+                        <p>support@versa-system.ru</p>
+                        <p>help@versa-system.ru</p>
+                    </div>
+                    
+                    <div class="contact-card">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <h3>Адрес</h3>
+                        <p>г. Москва, ул. Техническая, д. 15</p>
+                        <p>Офис 305</p>
+                    </div>
+                    
+                    <div class="contact-card">
+                        <i class="fas fa-clock"></i>
+                        <h3>Время работы</h3>
+                        <p>Пн-Пт: 9:00 - 18:00</p>
+                        <p>Сб: 10:00 - 14:00</p>
+                        <p>Вс: выходной</p>
+                    </div>
+                </div>
+                
+                <div class="contact-form-section">
+                    <h2>Обратная связь</h2>
+                    <form class="contact-form" method="POST" action="{{ url_for('contact') }}">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label" for="name">Ваше имя</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="email">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="subject">Тема сообщения</label>
+                            <select class="form-control" id="subject" name="subject" required>
+                                <option value="">Выберите тему</option>
+                                <option value="technical">Техническая поддержка</option>
+                                <option value="bug">Сообщить об ошибке</option>
+                                <option value="feature">Предложить улучшение</option>
+                                <option value="question">Общий вопрос</option>
+                                <option value="other">Другое</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="message">Сообщение</label>
+                            <textarea class="form-control" id="message" name="message" rows="5" placeholder="Опишите ваш вопрос или проблему..." required></textarea>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i>
+                                Отправить сообщение
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="contact-info-section">
+                    <h2>Дополнительная информация</h2>
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <h3>Для клиентов</h3>
+                            <ul>
+                                <li>Круглосуточная техническая поддержка</li>
+                                <li>Обучение работе с системой</li>
+                                <li>Консультации по оптимизации процессов</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="info-card">
+                            <h3>Для администраторов</h3>
+                            <ul>
+                                <li>Консультации по настройке системы</li>
+                                <li>Обновления и патчи</li>
+                                <li>Поддержка интеграции с другими системами</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

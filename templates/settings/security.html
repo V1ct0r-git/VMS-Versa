@@ -1,0 +1,181 @@
+{% extends "settings_base.html" %}
+
+{% block page_title %}Безопасность{% endblock %}
+{% block active_page %}security{% endblock %}
+
+{% block settings_content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Изменение пароля</h3>
+    </div>
+    <div class="card-body">
+        <form method="POST" class="password-form" id="passwordForm">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Старый пароль *</label>
+                    <input type="password" name="old_password" class="form-control" 
+                           placeholder="Введите текущий пароль" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Новый пароль *</label>
+                    <input type="password" name="new_password" class="form-control" 
+                           placeholder="Введите новый пароль" required 
+                           id="newPassword" oninput="checkPasswordStrength()">
+                    <div class="password-strength" id="passwordStrength"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Подтвердите новый пароль *</label>
+                    <input type="password" name="confirm_password" class="form-control" 
+                           placeholder="Подтвердите новый пароль" required
+                           id="confirmPassword" oninput="checkPasswordMatch()">
+                    <div class="password-match" id="passwordMatch"></div>
+                </div>
+            </div>
+            
+            <div class="password-requirements">
+                <h4>Требования к паролю:</h4>
+                <ul id="requirementsList">
+                    <li id="lengthReq" class="req-item">Не менее 6 символов</li>
+                    <li id="upperReq" class="req-item">Хотя бы одна заглавная буква</li>
+                    <li id="lowerReq" class="req-item">Хотя бы одна строчная буква</li>
+                    <li id="numberReq" class="req-item">Хотя бы одна цифра</li>
+                    <li id="specialReq" class="req-item">Хотя бы один специальный символ</li>
+                </ul>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+                    <i class="fas fa-key"></i>
+                    Изменить пароль
+                </button>
+                <a href="{{ url_for('password_settings') }}" class="btn btn-outline">
+                    <i class="fas fa-redo"></i>
+                    Сбросить
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Рекомендации по безопасности</h3>
+    </div>
+    <div class="card-body">
+        <div class="security-tips">
+            <div class="tip-card">
+                <i class="fas fa-shield-alt"></i>
+                <h4>Создавайте надежные пароли</h4>
+                <p>Используйте комбинацию букв, цифр и специальных символов. Избегайте очевидных паролей.</p>
+            </div>
+            <div class="tip-card">
+                <i class="fas fa-sync-alt"></i>
+                <h4>Регулярно меняйте пароли</h4>
+                <p>Рекомендуется менять пароль каждые 3-6 месяцев для повышения безопасности.</p>
+            </div>
+            <div class="tip-card">
+                <i class="fas fa-lock"></i>
+                <h4>Не делитесь паролями</h4>
+                <p>Никогда не передавайте свой пароль другим людям и не используйте его на других сайтах.</p>
+            </div>
+            <div class="tip-card">
+                <i class="fas fa-sign-out-alt"></i>
+                <h4>Выходите из системы</h4>
+                <p>Всегда выходите из системы, особенно при использовании общих или чужих компьютеров.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function checkPasswordStrength() {
+    const password = document.getElementById('newPassword').value;
+    const strengthDiv = document.getElementById('passwordStrength');
+    
+    // Проверяем требования
+    const hasLength = password.length >= 6;
+    const hasUpper = /[A-Z]/.test(password);
+    const hasLower = /[a-z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    
+    // Обновляем требования
+    document.getElementById('lengthReq').className = hasLength ? 'req-item valid' : 'req-item';
+    document.getElementById('upperReq').className = hasUpper ? 'req-item valid' : 'req-item';
+    document.getElementById('lowerReq').className = hasLower ? 'req-item valid' : 'req-item';
+    document.getElementById('numberReq').className = hasNumber ? 'req-item valid' : 'req-item';
+    document.getElementById('specialReq').className = hasSpecial ? 'req-item valid' : 'req-item';
+    
+    // Расчет силы пароля
+    let strength = 0;
+    if (hasLength) strength += 1;
+    if (hasUpper) strength += 1;
+    if (hasLower) strength += 1;
+    if (hasNumber) strength += 1;
+    if (hasSpecial) strength += 1;
+    
+    let strengthText = '';
+    let strengthClass = '';
+    
+    if (strength === 0) {
+        strengthText = 'Пароль не введен';
+        strengthClass = 'strength-weak';
+    } else if (strength < 3) {
+        strengthText = 'Слабый пароль';
+        strengthClass = 'strength-weak';
+    } else if (strength < 5) {
+        strengthText = 'Средний пароль';
+        strengthClass = 'strength-medium';
+    } else {
+        strengthText = 'Сильный пароль';
+        strengthClass = 'strength-strong';
+    }
+    
+    strengthDiv.innerHTML = `<span class="${strengthClass}">${strengthText}</span>`;
+    
+    // Проверяем совпадение паролей и обновляем кнопку
+    checkPasswordMatch();
+}
+
+function checkPasswordMatch() {
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    const matchDiv = document.getElementById('passwordMatch');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    if (confirmPassword === '') {
+        matchDiv.innerHTML = '';
+        submitBtn.disabled = true;
+        return;
+    }
+    
+    if (newPassword === confirmPassword) {
+        matchDiv.innerHTML = '<span class="match-valid">✓ Пароли совпадают</span>';
+        submitBtn.disabled = false;
+    } else {
+        matchDiv.innerHTML = '<span class="match-invalid">✗ Пароли не совпадают</span>';
+        submitBtn.disabled = true;
+    }
+}
+
+// Проверяем форму перед отправкой
+document.getElementById('passwordForm').addEventListener('submit', function(e) {
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (newPassword !== confirmPassword) {
+        e.preventDefault();
+        alert('Пароли не совпадают!');
+        return false;
+    }
+    
+    if (newPassword.length < 6) {
+        e.preventDefault();
+        alert('Пароль должен содержать не менее 6 символов!');
+        return false;
+    }
+});
+</script>
+{% endblock %}

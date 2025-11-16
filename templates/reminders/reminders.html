@@ -1,0 +1,346 @@
+{% extends "base.html" %}
+
+{% block title %}Напоминания - {{ system_info.system.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <div>
+            <h1 class="card-title">Напоминания</h1>
+            <p class="text-muted">Управление и отслеживание напоминаний о предстоящих работах</p>
+        </div>
+        <div>
+            <button class="btn btn-primary" onclick="addReminder()">
+                <i class="fas fa-plus"></i>
+                Добавить напоминание
+            </button>
+        </div>
+    </div>
+
+    <!-- Статистика -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.total }}</div>
+            <div class="stat-label">Всего напоминаний</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.read }}</div>
+            <div class="stat-label">Прочитано</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.not_read }}</div>
+            <div class="stat-label">Не прочитано</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.high_priority }}</div>
+            <div class="stat-label">Высокий приоритет</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.critical_priority }}</div>
+            <div class="stat-label">Критический приоритет</div>
+        </div>
+    </div>
+
+    <!-- Фильтры -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Фильтры</h3>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="filter-form">
+                <div class="filter-grid">
+                    <div class="form-group">
+                        <label class="form-label">Тип напоминания</label>
+                        <select name="type" class="form-control">
+                            <option value="">Все типы</option>
+                            <option value="maintenance" {% if type == 'maintenance' %}selected{% endif %}>Техническое обслуживание</option>
+                            <option value="inspection" {% if type == 'inspection' %}selected{% endif %}>Техосмотр</option>
+                            <option value="insurance" {% if type == 'insurance' %}selected{% endif %}>Страховка</option>
+                            <option value="license" {% if type == 'license' %}selected{% endif %}>Лицензия</option>
+                            <option value="other" {% if type == 'other' %}selected{% endif %}>Другое</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Приоритет</label>
+                        <select name="priority" class="form-control">
+                            <option value="">Все приоритеты</option>
+                            <option value="low" {% if priority == 'low' %}selected{% endif %}>Низкий</option>
+                            <option value="medium" {% if priority == 'medium' %}selected{% endif %}>Средний</option>
+                            <option value="high" {% if priority == 'high' %}selected{% endif %}>Высокий</option>
+                            <option value="critical" {% if priority == 'critical' %}selected{% endif %}>Критический</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Статус прочтения</label>
+                        <select name="is_read" class="form-control">
+                            <option value="">Все статусы</option>
+                            <option value="true" {% if is_read == 'true' %}selected{% endif %}>Прочитано</option>
+                            <option value="false" {% if is_read == 'false' %}selected{% endif %}>Не прочитано</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Дата с</label>
+                        <input type="date" name="date_from" class="form-control" value="{{ date_from }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Дата по</label>
+                        <input type="date" name="date_to" class="form-control" value="{{ date_to }}">
+                    </div>
+
+                                    <!-- Новый чекбокс "Показать завершенные ТО" -->
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="show_completed" name="show_completed" value="true" {% if show_completed %}checked{% endif %}>
+                            <label class="form-check-label" for="show_completed">Показать напоминания для завершенных ТО</label>
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <div class="filter-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-filter"></i>
+                        Применить фильтры
+                    </button>
+                    <a href="{{ url_for('reminders') }}" class="btn btn-outline">
+                        <i class="fas fa-times"></i>
+                        Сбросить
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Таблица напоминаний -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Список напоминаний</h3>
+        </div>
+        <div class="card-body">
+            {% if reminders.items %}
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <a href="?{% for key, value in request.args.items() if key not in ['sort_by', 'sort_order', 'page'] %}{{ key }}={{ value }}&{% endfor %}sort_by=remindDate&sort_order={% if sort_by == 'remindDate' and sort_order == 'asc' %}desc{% else %}asc{% endif %}"
+                                       class="sort-link">
+                                        Дата напоминания
+                                        {% if sort_by == 'remindDate' %}
+                                            <i class="fas fa-sort-{% if sort_order == 'asc' %}up{% else %}down{% endif %}"></i>
+                                        {% endif %}
+                                    </a>
+                                </th>
+                                <th>
+                                    <a href="?{% for key, value in request.args.items() if key not in ['sort_by', 'sort_order', 'page'] %}{{ key }}={{ value }}&{% endfor %}sort_by=priority&sort_order={% if sort_by == 'priority' and sort_order == 'asc' %}desc{% else %}asc{% endif %}"
+                                       class="sort-link">
+                                        Приоритет
+                                        {% if sort_by == 'priority' %}
+                                            <i class="fas fa-sort-{% if sort_order == 'asc' %}up{% else %}down{% endif %}"></i>
+                                        {% endif %}
+                                    </a>
+                                </th>
+                                <th>Автомобиль</th>
+                                <th>Сообщение</th>
+                                <th>Статус прочтения</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reminder in reminders.items %}
+                                <tr>
+                                    <td data-label="Дата напоминания">
+                                        {{ reminder.remindDate.strftime('%d.%m.%Y') if reminder.remindDate else '—' }}
+                                    </td>
+                                    <td data-label="Приоритет">
+                                        <span class="priority-badge priority-{{ reminder.priority }}">
+                                            {{ {
+                                                'low': 'Низкий',
+                                                'medium': 'Средний',
+                                                'high': 'Высокий',
+                                                'critical': 'Критический'
+                                            }[reminder.priority] }}
+                                        </span>
+                                    </td>
+                                    <td data-label="Автомобиль">
+                                        {% if reminder.maintenance and reminder.maintenance.car %}
+                                            {{ reminder.maintenance.car.brand }} {{ reminder.maintenance.car.model }}
+                                            ({{ reminder.maintenance.car.licensePlate }})
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                    <td data-label="Сообщение">
+                                        {{ reminder.message[:50] }}{% if reminder.message|length > 50 %}...{% endif %}
+                                    </td>
+                                    <td data-label="Статус прочтения">
+                                        <span class="badge {{ 'badge-success' if reminder.isRead == 'true' else 'badge-warning' }}">
+                                            {{ 'Прочитано' if reminder.isRead == 'true' else 'Не прочитано' }}
+                                        </span>
+                                    </td>
+                                    <td data-label="Действия">
+                                        <div class="table-actions">
+                                            <a href="{{ url_for('view_reminder', reminder_id=reminder.reminderID) }}" 
+                                               class="btn btn-sm btn-outline" title="Просмотр">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ url_for('edit_reminder', reminder_id=reminder.reminderID) }}" 
+                                               class="btn btn-sm btn-outline" title="Редактировать">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form method="POST" action="{{ url_for('delete_reminder', reminder_id=reminder.reminderID) }}" 
+                                                  style="display: inline;" onsubmit="return confirm('Удалить напоминание?')">
+                                                <button type="submit" class="btn btn-sm btn-outline" title="Удалить">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Пагинация -->
+                <div class="pagination-container">
+                    <div class="pagination-info">
+                        {% set start = ((reminders.page - 1) * reminders.per_page) + 1 %}
+                        {% set end = reminders.page * reminders.per_page %}
+                        {% set total = reminders.total %}
+                        Показано {{ start }} - {{ end if end <= total else total }} из {{ total }} записей
+                    </div>
+                    <div class="pagination">
+                        {% set base_params = {} %}
+                        {% for key, value in request.args.items() %}
+                            {% if key not in ['page', 'sort_by', 'sort_order'] %}
+                                {% set _ = base_params.update({key: value}) %}
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if reminders.has_prev %}
+                            <a href="?{% for key, value in base_params.items() %}{{ key }}={{ value }}&{% endfor %}sort_by={{ sort_by }}&sort_order={{ sort_order }}&page={{ reminders.prev_num }}" 
+                            class="page-link">&laquo;</a>
+                        {% endif %}
+                        
+                        {% for p in range([1, reminders.page - 2]|max, [reminders.pages, reminders.page + 2]|min + 1) %}
+                            {% if p >= reminders.page - 2 and p <= reminders.page + 2 %}
+                                {% if p == reminders.page %}
+                                    <span class="page-link active">{{ p }}</span>
+                                {% else %}
+                                    <a href="?{% for key, value in base_params.items() %}{{ key }}={{ value }}&{% endfor %}sort_by={{ sort_by }}&sort_order={{ sort_order }}&page={{ p }}" 
+                                    class="page-link">{{ p }}</a>
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if reminders.has_next %}
+                            <a href="?{% for key, value in base_params.items() %}{{ key }}={{ value }}&{% endfor %}sort_by={{ sort_by }}&sort_order={{ sort_order }}&page={{ reminders.next_num }}" 
+                            class="page-link">&raquo;</a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="no-data">
+                    <i class="fas fa-bell"></i>
+                    <h3>Нет напоминаний</h3>
+                    <p>Создайте первое напоминание, чтобы начать отслеживание</p>
+                    <button class="btn btn-primary" onclick="addReminder()">
+                        <i class="fas fa-plus"></i>
+                        Добавить напоминание
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.sort-link {
+    color: var(--text-color);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.sort-link:hover {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.sort-link i {
+    font-size: 0.8em;
+    opacity: 0.7;
+}
+
+.sort-link:hover i {
+    opacity: 1;
+}
+
+.priority-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.priority-high {
+    background: var(--warning);
+    color: #212529;
+}
+
+.priority-medium {
+    background: #fd7e14;
+    color: var(--white);
+}
+
+.priority-low {
+    background: var(--success);
+    color: var(--white);
+}
+
+.priority-critical {
+    background: var(--danger);
+    color: var(--white);
+}
+</style>
+
+<script>
+function addReminder() {
+    // Перенаправление на страницу добавления напоминания (когда она будет создана)
+    alert('Функция добавления напоминания будет реализована в следующей версии');
+    // window.location.href = '/reminders/add';
+}
+
+// Функция для отправки напоминания
+function sendReminder(reminderId) {
+    if (confirm('Отправить напоминание?')) {
+        // Реализация отправки напоминания
+        fetch(`/reminders/${reminderId}/send`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Ошибка при отправке напоминания');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Ошибка при отправке напоминания');
+        });
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,343 @@
+{% extends "base.html" %}
+
+{% block title %}{{ mechanic.fullName }} - {{ system_info.system.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <div>
+            <h1 class="card-title">Информация о механике</h1>
+            <p class="page-subtitle">{{ mechanic.fullName }}</p>
+        </div>
+        <div>
+            <a href="{{ url_for('mechanics') }}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i>
+                Назад к списку
+            </a>
+        </div>
+    </div>
+
+    <div class="mechanic-dashboard">
+        <!-- Блок профиля -->
+        <div class="profile-section">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-user"></i> Профиль механика</h3>
+                </div>
+                <div class="card-body">
+                    <div class="profile-grid">
+                        <!-- Основная информация -->
+                        <div class="info-card">
+                            <div class="info-header">
+                                <h4><i class="fas fa-info-circle"></i> Основная информация</h4>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-row">
+                                    <span class="info-label">ФИО:</span>
+                                    <span class="info-value">{{ mechanic.fullName }}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Имя пользователя:</span>
+                                    <span class="info-value">{{ mechanic.username }}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Роль:</span>
+                                    <span class="info-value badge badge-info">Механик</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Статус:</span>
+                                    <span class="info-value badge {{ 'badge-success' if mechanic.isBlocked == 'false' else 'badge-danger' }}">
+                                        {{ 'Активный' if mechanic.isBlocked == 'false' else 'Заблокирован' }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Контактная информация -->
+                        <div class="info-card">
+                            <div class="info-header">
+                                <h4><i class="fas fa-envelope"></i> Контактная информация</h4>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-row">
+                                    <span class="info-label">Email:</span>
+                                    <span class="info-value">{{ mechanic.mail or '—' }}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Телефон:</span>
+                                    <span class="info-value">{{ mechanic.phone or '—' }}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Дата регистрации:</span>
+                                    <span class="info-value">{{ mechanic.passwordDate.strftime('%d.%m.%Y %H:%M') if mechanic.passwordDate else '—' }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Статистика работы -->
+                        <div class="info-card">
+                            <div class="info-header">
+                                <h4><i class="fas fa-chart-bar"></i> Статистика работы</h4>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-row">
+                                    <span class="info-label">Выполнено ТО:</span>
+                                    <span class="info-value badge badge-info">{{ mechanic.completed_maintenance_count or 0 }}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Текущая нагрузка:</span>
+                                    <span class="info-value badge badge-warning">{{ mechanic.current_workload or 0 }}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Общая стоимость работ:</span>
+                                    <span class="info-value">{{ "{:,.2f}".format(mechanic.total_earnings or 0.0) }} ₽</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Блок последних работ -->
+<div class="works-section">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-wrench"></i> Последние работы</h3>
+        </div>
+        <div class="card-body">
+            {% if recent_maintenance %}
+            <div class="recent-works-grid">
+                {% for work in recent_maintenance %}
+                <div class="work-card">
+                    <div class="work-header">
+                        <div class="work-icon">
+                            <i class="fas fa-car"></i>
+                        </div>
+                        <div class="work-title">
+                            <h5>{{ work.maintenance_type.name if work.maintenance_type else 'Техническое обслуживание' }}</h5>
+                            <small class="text-muted">{{ work.startDate.strftime('%d.%m.%Y') if work.startDate else '—' }}</small>
+                        </div>
+                    </div>
+                    <div class="work-details">
+                        <div class="work-car">
+                            <i class="fas fa-car"></i> {{ work.car.brand if work.car else '—' }} {{ work.car.model if work.car else '—' }}
+                        </div>
+                        <div class="work-status">
+                            <span class="badge 
+                                {{ 'badge-success' if work.status == 'completed' else 
+                                   'badge-warning' if work.status == 'in_progress' else 
+                                   'badge-secondary' if work.status == 'planned' else 
+                                   'badge-danger' }}">
+                                {{ {
+                                    'planned': 'Запланировано',
+                                    'in_progress': 'В процессе',
+                                    'completed': 'Завершено',
+                                    'cancelled': 'Отменено',
+                                    'on_hold': 'Приостановлено'
+                                }[work.status] }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="work-actions">
+                        <a href="{{ url_for('view_maintenance', record_id=work.maintenanceID) }}" class="btn btn-sm btn-outline">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="no-data">
+                <i class="fas fa-inbox"></i>
+                <p>Нет выполненных работ</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+    </div>
+</div>
+
+<style>
+.mechanic-dashboard {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+.profile-section {
+    width: 100%;
+}
+
+.works-section {
+    width: 100%;
+}
+
+/* Улучшенная сетка профиля */
+.profile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.info-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.info-header {
+    background: var(--light);
+    padding: 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.info-header h4 {
+    margin: 0;
+    color: var(--primary);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.info-content {
+    padding: 1rem;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-weight: 500;
+    color: var(--text-light);
+}
+
+.info-value {
+    color: var(--text);
+    font-weight: 500;
+}
+
+/* Сетка последних работ */
+.recent-works-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.work-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    transition: var(--transition);
+    position: relative;
+}
+
+.work-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+
+.work-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.work-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+}
+
+.work-title h5 {
+    margin: 0;
+    color: var(--text);
+    font-size: 1rem;
+}
+
+.work-title small {
+    display: block;
+    color: var(--text-light);
+    font-size: 0.85rem;
+}
+
+.work-details {
+    margin: 1rem 0;
+}
+
+.work-car {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-light);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.work-status {
+    display: inline-block;
+    margin-top: 0.5rem;
+}
+
+.work-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1rem;
+}
+
+.work-actions .btn {
+    padding: 0.25rem 0.5rem;
+    min-width: auto;
+}
+
+/* Адаптивность */
+@media screen and (max-width: 768px) {
+    .profile-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .recent-works-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .work-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .work-title {
+        width: 100%;
+    }
+    
+    .work-title h5 {
+        text-align: left;
+    }
+    
+    .work-title small {
+        text-align: left;
+    }
+}
+</style>
+{% endblock %}

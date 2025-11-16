@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+
+{% block title %}Информация о системе - {{ system_info.system.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <div>
+            <h1 class="card-title">{{ system_info.system.full_name }}</h1>
+            <p class="text-muted">{{ system_info.system.description }}</p>
+        </div>
+    </div>
+
+    <div class="system-info-container">
+        <!-- Основная информация -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Основная информация</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Название:</label>
+                        <span>{{ system_info.system.full_name }}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Версия:</label>
+                        <span class="badge badge-info">{{ system_info.system.version }}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Статус разработки:</label>
+                        <span class="badge badge-success">{{ system_info.system.development_status }}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Дата релиза:</label>
+                        <span>{{ system_info.system.release_date }}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Последнее обновление:</label>
+                        <span>{{ system_info.system.last_update }}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Лицензия:</label>
+                        <span>{{ system_info.system.license }}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Автор:</label>
+                        <span>{{ system_info.system.author }}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Компания:</label>
+                        <span>{{ system_info.system.company }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Технологии -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Используемые технологии</h3>
+            </div>
+            <div class="card-body">
+                <div class="tech-grid">
+                    {% for tech, version in system_info.technology_versions.items() %}
+                        <div class="tech-item">
+                            <h5>{{ tech.replace('_', ' ').title() }}</h5>
+                            <p>{{ version }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Модули системы -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Модули системы</h3>
+            </div>
+            <div class="card-body">
+                <div class="modules-grid">
+                    {% for module_key, module_info in system_info.modules.items() %}
+                        <div class="module-card">
+                            <h4>{{ module_info.name }}</h4>
+                            <p class="module-version">Версия: {{ module_info.version }}</p>
+                            <p class="module-description">{{ module_info.description }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Зависимости -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Зависимости</h3>
+            </div>
+            <div class="card-body">
+                <div class="dependencies-list">
+                    {% for dep in system_info.dependencies %}
+                        <div class="dependency-item">
+                            <code>{{ dep }}</code>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Системные требования -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Системные требования</h3>
+            </div>
+            <div class="card-body">
+                <div class="requirements-grid">
+                    <div class="requirement-item">
+                        <label>ОС:</label>
+                        <span>{{ system_info.requirements.os }} {{ system_info.requirements.os_version }}</span>
+                    </div>
+                    <div class="requirement-item">
+                        <label>Архитектура:</label>
+                        <span>{{ system_info.requirements.architecture }}</span>
+                    </div>
+                    <div class="requirement-item">
+                        <label>Процессор:</label>
+                        <span>{{ system_info.requirements.processor or 'Не определен' }}</span>
+                    </div>
+                    <div class="requirement-item">
+                        <label>Python:</label>
+                        <span>{{ system_info.requirements.python_version.major }}.{{ system_info.requirements.python_version.minor }}.{{ system_info.requirements.python_version.micro }}</span>
+                    </div>
+                    <div class="requirement-item">
+                        <label>Память:</label>
+                        <span>{{ system_info.requirements.memory }}</span>
+                    </div>
+                    <div class="requirement-item">
+                        <label>Дисковое пространство:</label>
+                        <span>{{ system_info.requirements.disk_space }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Лицензия -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Лицензирование</h3>
+            </div>
+            <div class="card-body">
+                <div class="license-info">
+                    <div class="info-item">
+                        <label>Тип лицензии:</label>
+                        <span>{{ system_info.license.type }}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Использование:</label>
+                        <span>{{ system_info.license.usage }}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Распространение:</label>
+                        <span>{{ system_info.license.distribution }}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Поддержка:</label>
+                        <span>{{ system_info.license.support }}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Обновления:</label>
+                        <span>{{ system_info.license.updates }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.system-info-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.tech-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.tech-item {
+    background: var(--light);
+    padding: 1rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+}
+
+.tech-item h5 {
+    margin: 0 0 0.5rem 0;
+    color: var(--primary);
+}
+
+.tech-item p {
+    margin: 0;
+    font-family: monospace;
+    font-size: 0.9rem;
+    color: var(--text-light);
+}
+
+.modules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.module-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    transition: var(--transition);
+}
+
+.module-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+}
+
+.module-card h4 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text);
+}
+
+.module-version {
+    color: var(--primary);
+    font-weight: 500;
+    margin: 0.25rem 0;
+}
+
+.module-description {
+    color: var(--text-light);
+    margin: 0.5rem 0;
+}
+
+.dependencies-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.dependency-item {
+    background: var(--light);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-sm);
+    border-left: 4px solid var(--primary);
+}
+
+.requirements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.requirement-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.requirement-item label {
+    font-weight: 500;
+    color: var(--text-light);
+}
+
+.requirement-item span {
+    color: var(--text);
+}
+
+.license-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+@media screen and (max-width: 768px) {
+    .tech-grid,
+    .modules-grid,
+    .requirements-grid,
+    .license-info {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

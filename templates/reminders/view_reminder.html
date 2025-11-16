@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Просмотр напоминания - Верса{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <div>
+            <h1 class="card-title">Просмотр напоминания #{{ reminder.reminderID }}</h1>
+        </div>
+        <div>
+            <a href="{{ url_for('reminders') }}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i>
+                Назад к списку
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Информация о напоминании</h3>
+        </div>
+        <div class="card-body">
+            <div class="form-grid">
+                
+                <div class="form-group">
+                    <label class="form-label">Приоритет</label>
+                    <div class="form-control-static">
+                        <span class="priority-badge priority-{{ reminder.priority }}">
+                            {{ {
+                                'low': 'Низкий',
+                                'medium': 'Средний',
+                                'high': 'Высокий',
+                                'critical': 'Критический'
+                            }[reminder.priority] }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Дата напоминания</label>
+                    <div class="form-control-static">
+                        {{ reminder.remindDate.strftime('%d.%m.%Y') if reminder.remindDate else '—' }}
+                    </div>
+                </div>
+
+                <!-- Добавлено отображение статуса "Прочитано" -->
+                <div class="form-group">
+                    <label class="form-label">Статус прочтения</label>
+                    <div class="form-control-static">
+                        <span class="badge {{ 'badge-success' if reminder.isRead == 'true' else 'badge-warning' }}">
+                            {{ 'Прочитано' if reminder.isRead == 'true' else 'Не прочитано' }}
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Добавлено отображение назначенного механика с ссылкой -->
+                {% if reminder.maintenance and reminder.maintenance.user %}
+                <div class="form-group">
+                    <label class="form-label">Назначенный механик</label>
+                    <div class="form-control-static">
+                        {% if current_user.role in ['admin', 'manager'] %}
+                        <!-- Ссылка отображается только для администраторов и менеджеров -->
+                        <a href="{{ url_for('view_mechanic', mechanic_id=reminder.maintenance.user.userID) }}">
+                            {{ reminder.maintenance.user.fullName or reminder.maintenance.user.username }}
+                        </a>
+                        {% else %}
+                        <!-- Для других ролей (например, механика) просто отображаем имя -->
+                        {{ reminder.maintenance.user.fullName or reminder.maintenance.user.username }}
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="form-group" style="grid-column: span 2;">
+                    <label class="form-label">Сообщение</label>
+                    <div class="form-control-static" style="white-space: pre-wrap;">{{ reminder.message }}</div>
+                </div>
+                
+                {% if reminder.maintenance %}
+                <div class="form-group" style="grid-column: span 2;">
+                    <label class="form-label">Связанное ТО</label>
+                    <div class="form-control-static">
+                        <a href="{{ url_for('view_maintenance', record_id=reminder.maintenance.maintenanceID) }}">
+                            ТО #{{ reminder.maintenance.maintenanceID }} - {{ reminder.maintenance.maintenance_type.name if reminder.maintenance.maintenance_type }}
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="form-group">
+                    <label class="form-label">Дата создания</label>
+                    <div class="form-control-static">{{ reminder.createdAt.strftime('%d.%m.%Y %H:%M') if reminder.createdAt else '—' }}</div>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <a href="{{ url_for('edit_reminder', reminder_id=reminder.reminderID) }}" class="btn btn-primary">
+                    <i class="fas fa-edit"></i>
+                    Редактировать
+                </a>
+                <form method="POST" action="{{ url_for('delete_reminder', reminder_id=reminder.reminderID) }}" 
+                      style="display: inline;" onsubmit="return confirm('Удалить напоминание?')">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i>
+                        Удалить
+                    </button>
+                </form>
+                <!-- Условие для отображения кнопки: пользователь - механик И напоминание не прочитано -->
+                {% if current_user.role == 'mechanic' and reminder.isRead != 'true' %}
+                <button class="btn btn-info" onclick="markAsRead({{ reminder.reminderID }})">
+                    <i class="fas fa-check"></i>
+                    Отметить как прочитанное
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function markAsRead(reminderId) {
+    if (confirm('Отметить напоминание как прочитанное?')) {
+        fetch(`/reminders/mark_read/${reminderId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Напоминание отмечено как прочитанное!');
+                location.reload(); // Перезагружаем страницу для обновления статуса и скрытия кнопки
+            } else {
+                alert(data.error || 'Ошибка при обновлении статуса напоминания');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Ошибка при обновлении статуса напоминания');
+        });
+    }
+}
+</script>
+{% endblock %}

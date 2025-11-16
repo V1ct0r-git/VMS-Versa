@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}Резервное копирование - Верса{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <div>
+            <h1 class="card-title">Резервное копирование</h1>
+            <p class="text-muted">Создание и управление резервными копиями базы данных</p>
+        </div>
+        <!-- Кнопка "Назад" -->
+        <div>
+            <a href="{{ url_for('admin') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Назад
+            </a>
+        </div>
+    </div>
+
+        <!-- Кнопка создания бэкапа и информация о следующем -->
+        <div class="card mb-4">
+            <div class="card-body" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+                <!-- Левая часть: Кнопка -->
+                <button class="btn btn-primary" onclick="createBackup()">
+                    <i class="fas fa-plus-circle"></i>
+                    Создать новую резервную копию
+                </button>
+
+                <!-- Правая часть: Информация о следующем бэкапе -->
+                <div style="text-align: right; font-size: 0.875rem; color: #6c757d;">
+                    <p style="margin-bottom: 0.25rem; margin-top: 0;">Следующий автоматический бэкап запланирован на: <strong>8:00 утра</strong></p>
+                    <p style="margin-bottom: 0; margin-top: 0;">До следующего бэкапа осталось: <span id="backup-timer" style="background-color: #e9f2f8; color: #17a2b8; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-weight: bold;">--:--:--</span></p>
+                </div>
+            </div>
+        </div>
+
+    <!-- Список бэкапов -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Список резервных копий</h3>
+        </div>
+        <div class="card-body">
+            {% if backups %}
+            <div class="table-responsive">
+                <div class="table-info">
+                    Показано {{ backups|length }} из {{ backups|length }} записей
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Имя файла</th>
+                            <th>Дата создания<br><small class="text-muted">Дней назад</small></th>
+                            <th>Размер</th>
+                            <th>Структура БД<br><small class="text-muted">Таблиц / Записей</small></th>
+                            <th>Источник</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for backup in backups %}
+                        <tr>
+                            <td>{{ backup.name }}</td>
+                            <td>
+                                {{ backup.date_str }}<br>
+                                <small class="text-muted">{{ backup.days_old }} дн.</small>
+                            </td>
+                            <td>{{ "%.2f"|format(backup.size / 1024 / 1024) }} MB</td>
+                            <td>{{ backup.tables }} / {{ backup.inserts }}</td>
+                            <td>
+                                <span class="badge badge-{{ 'success' if backup.source_label == 'Автоматически' else 'info' }}">
+                                    {{ backup.source_label }}
+                                </span>
+                            </td>
+                            <td>
+                                <!-- Кнопка Скачать -->
+                                <a href="{{ url_for('download_backup', filename=backup.name) }}" 
+                                class="btn btn-sm btn-outline-primary me-1"
+                                title="Скачать бэкап">
+                                    <i class="fas fa-download"></i>
+                                </a>
+
+                                <!-- Кнопка Избранное -->
+                                {% if backup.is_favorite %}
+                                    <button class="btn btn-sm btn-outline-warning me-1" 
+                                            onclick="toggleFavorite('{{ backup.name }}')"
+                                            title="Убрать из избранного">
+                                        <i class="fas fa-star"></i>
+                                    </button>
+                                {% else %}
+                                    <button class="btn btn-sm btn-outline-secondary me-1" 
+                                            onclick="toggleFavorite('{{ backup.name }}')"
+                                            title="Добавить в избранное">
+                                        <i class="far fa-star"></i>
+                                    </button>
+                                {% endif %}
+
+                                <!-- Кнопка Удалить -->
+                                {% if backup.is_favorite %}
+                                    <button class="btn btn-sm btn-outline-secondary" disabled title="Избранный бэкап — нельзя удалить">
+                                        <i class="fas fa-trash"></i> Удалить
+                                    </button>
+                                {% elif backup.days_old < 7 %}
+                                    <button class="btn btn-sm btn-outline-secondary" disabled title="Нельзя удалить, срок менее 7 дней">
+                                        <i class="fas fa-trash"></i> Удалить
+                                    </button>
+                                {% else %}
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteBackup('{{ backup.name }}')">
+                                        <i class="fas fa-trash"></i> Удалить
+                                    </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted">Резервные копии отсутствуют.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function createBackup() {
+    if (confirm('Создать новую резервную копию?')) {
+        fetch('/admin/backup/create', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Резервная копия создана успешно.');
+                    location.reload();
+                } else {
+                    alert('Ошибка: ' + data.message);
+                }
+            })
+            .catch(err => {
+                console.error('Ошибка при создании бэкапа:', err);
+                alert('Произошла ошибка при создании бэкапа.');
+            });
+    }
+}
+
+function toggleFavorite(filename) {
+    fetch('/admin/backup/toggle-favorite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename: filename })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload(); // Перезагружаем страницу, чтобы обновить статус
+        } else {
+            alert('Ошибка: ' + data.message);
+        }
+    })
+    .catch(err => {
+        console.error('Ошибка при изменении избранного:', err);
+        alert('Произошла ошибка при изменении избранного.');
+    });
+}
+
+function deleteBackup(filename) {
+    // Проверяем, активна ли кнопка
+    const button = event.target.closest('button');
+    if (button.disabled) {
+        alert("Этот бэкап защищён — его нельзя удалить.");
+        return;
+    }
+
+    if (confirm(`Удалить файл ${filename}? Это действие нельзя отменить.`)) {
+        fetch('/admin/backup/delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ filename: filename })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Файл удалён.');
+                location.reload();
+            } else {
+                alert('Ошибка: ' + data.message);
+            }
+        })
+        .catch(err => {
+            console.error('Ошибка при удалении бэкапа:', err);
+            alert('Произошла ошибка при удалении бэкапа.');
+        });
+    }
+}
+
+// Функция для вычисления времени до следующего 8:00 утра
+function updateBackupTimer() {
+    const now = new Date();
+    let nextBackup = new Date(now);
+    nextBackup.setHours(8, 0, 0, 0); // Устанавливаем на 8:00 сегодня
+
+    // Если 8:00 уже прошло сегодня, переносим на 8:00 завтра
+    if (now >= nextBackup) {
+        nextBackup.setDate(nextBackup.getDate() + 1);
+    }
+
+    const diff = nextBackup - now; // Разница в миллисекундах
+
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+    // Обновляем элемент на странице
+    document.getElementById('backup-timer').textContent = 
+        `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
+// Запускаем таймер и обновляем каждую секунду
+updateBackupTimer();
+setInterval(updateBackupTimer, 1000);
+</script>
+{% endblock %}

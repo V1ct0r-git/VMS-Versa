@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}{{ car['brand'] }} {{ car['model'] }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Заголовок страницы -->
+    <div class="page-header">
+        <h1><i class="fas fa-car"></i> {{ car['brand'] }} {{ car['model'] }}</h1>
+        <div class="btn-group">
+            <a href="{{ url_for('vehicles') }}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i> Назад к списку
+            </a>
+            <a href="{{ url_for('edit_vehicle', car_id=car['CarID']) }}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Редактировать
+            </a>
+        </div>
+    </div>
+
+    <!-- Основная информация -->
+    <div class="card">
+        <div class="card-header">
+            <h2><i class="fas fa-info-circle"></i> Основная информация</h2>
+        </div>
+        <div class="card-body">
+            <div class="info-grid">
+                <div class="info-item">
+                    <label><i class="fas fa-id-card"></i> ID машины:</label>
+                    <span class="info-value">{{ car['CarID'] }}</span>
+                </div>
+                <div class="info-item">
+                    <label><i class="fas fa-car"></i> Марка:</label>
+                    <span class="info-value">{{ car['brand'] }}</span>
+                </div>
+                <div class="info-item">
+                    <label><i class="fas fa-car-side"></i> Модель:</label>
+                    <span class="info-value">{{ car['model'] }}</span>
+                </div>
+                <div class="info-item">
+                    <label><i class="fas fa-calendar-alt"></i> Год выпуска:</label>
+                    <span class="info-value">{{ car['year'] }}</span>
+                </div>
+                <div class="info-item">
+                    <label><i class="fas fa-tag"></i> ГОС номер:</label>
+                    <span class="info-value">{{ car['licensePlate'] }}</span>
+                </div>
+                <div class="info-item">
+                    <label><i class="fas fa-barcode"></i> VIN номер:</label>
+                    <span class="info-value">{{ car['vin'] or 'Не указан' }}</span>
+                </div>
+                <div class="info-item">
+                    <label><i class="fas fa-cog"></i> Номер двигателя:</label>
+                    <span class="info-value">{{ car['engineNumber'] or 'Не указан' }}</span>
+                </div>
+                <div class="info-item">
+                    <label><i class="fas fa-palette"></i> Цвет:</label>
+                    <span class="info-value">{{ car['color'] or 'Не указан' }}</span>
+                </div>
+                <div class="info-item">
+                    <label><i class="fas fa-tachometer-alt"></i> Мощность:</label>
+                    <span class="info-value">{{ car['power'] or 'Не указана' }} л.с.</span>
+                </div>
+                <div class="info-item">
+                    <label><i class="fas fa-road"></i> Пробег:</label>
+                    <span class="info-value">{{ car['mileage'] }} км</span>
+                </div>
+                <div class="info-item">
+                    <label><i class="fas fa-tools"></i> Статус:</label>
+                    <span class="badge {{ 'badge-success' if car['status'] == 'Active' else 'badge-warning' if car['status'] == 'Maintenance' else 'badge-secondary' if car['status'] == 'Inactive' else 'badge-danger' }}">
+                        {{ 'Активный' if car['status'] == 'Active' else 'На ТО' if car['status'] == 'Maintenance' else 'Неактивный' if car['status'] == 'Inactive' else 'Выбыл' }}
+                    </span>
+                </div>
+                <div class="info-item">
+                    <label><i class="fas fa-calendar-check"></i> Последнее ТО:</label>
+                    <span class="info-value">{{ car['lastMaintenance'].strftime('%d.%m.%Y') if car['lastMaintenance'] else 'Не указано' }}</span>
+                </div>
+                <div class="info-item">
+                    <label><i class="fas fa-calendar-day"></i> Следующее ТО:</label>
+                    <span class="info-value">{{ car['nextMaintenance'].strftime('%d.%m.%Y') if car['nextMaintenance'] else 'Не указано' }}</span>
+                </div>
+                <div class="info-item">
+                    <label><i class="fas fa-ruler-combined"></i> Интервал ТО:</label>
+                    <span class="info-value">{{ car['maintenanceInterval'] or '10000' }} км</span>
+                </div>
+                <div class="info-item full-width">
+                    <label><i class="fas fa-sticky-note"></i> Заметки:</label>
+                    <span class="info-value">{{ car['notes'] or 'Нет заметок' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Действия -->
+    <div class="card">
+        <div class="card-header">
+            <h2><i class="fas fa-cogs"></i> Действия</h2>
+        </div>
+        <div class="card-body">
+            <div class="actions-grid">
+                <a href="{{ url_for('maintenance_records') }}?car_id={{ car['CarID'] }}" class="action-btn">
+                    <i class="fas fa-tools"></i>
+                    <span>История ТО</span>
+                </a>
+                <a href="{{ url_for('add_maintenance') }}?car_id={{ car['CarID'] }}" class="action-btn">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Добавить ТО</span>
+                </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem 0;
+}
+
+.info-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.info-item label {
+    font-weight: 600;
+    color: #6c757d;
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.info-value {
+    font-size: 1rem;
+    color: #2c3e50;
+    word-break: break-word;
+}
+
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    text-align: center;
+    text-decoration: none;
+    color: #2c3e50;
+    transition: all 0.3s;
+    border: 1px solid #eaeef2;
+    position: relative;
+}
+
+.action-btn:hover {
+    background: #e9ecef;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    text-decoration: none;
+    color: #2c3e50;
+}
+
+.action-btn i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: #4a90e2;
+}
+
+.action-btn span {
+    font-weight: 500;
+}
+
+
+
+@media (max-width: 768px) {
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .actions-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .actions-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

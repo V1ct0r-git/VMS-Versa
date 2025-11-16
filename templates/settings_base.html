@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}">
+{% endblock %}
+
+
+{% block title %}{{ page_title }} - Верса{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1 class="card-title">{{ page_title }}</h1>
+    </div>
+
+    <div class="settings-grid">
+        <!-- Боковая панель (меню) -->
+        <div class="settings-sidebar">
+            <div class="settings-menu">
+                <a href="{{ url_for('settings') }}" class="settings-menu-item {% if active_page == 'general' %}active{% endif %}">
+                    <i class="fas fa-cog"></i>
+                    <span>Общие</span>
+                </a>
+                <a href="{{ url_for('profile_settings') }}" class="settings-menu-item {% if active_page == 'profile' %}active{% endif %}">
+                    <i class="fas fa-user"></i>
+                    <span>Профиль</span>
+                </a>
+                <a href="{{ url_for('password_settings') }}" class="settings-menu-item {% if active_page == 'security' %}active{% endif %}">
+                    <i class="fas fa-lock"></i>
+                    <span>Безопасность</span>
+                </a>
+                <a href="{{ url_for('notification_settings') }}" class="settings-menu-item {% if active_page == 'notifications' %}active{% endif %}">
+                    <i class="fas fa-bell"></i>
+                    <span>Уведомления</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Контентная область -->
+        <div class="settings-content">
+            {% block settings_content %}{% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %}

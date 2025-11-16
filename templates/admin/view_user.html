@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Просмотр пользователя {{ user.fullName }} - Верса{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <div>
+            <h1 class="card-title">Просмотр пользователя</h1>
+            <p class="text-muted">{{ user.fullName }} ({{ user.username }})</p>
+        </div>
+        <div>
+            <a href="{{ url_for('admin_users') }}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i>
+                Назад к списку
+            </a>
+        </div>
+    </div>
+
+    <!-- Информация о пользователе -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Информация о пользователе</h3>
+        </div>
+        <div class="card-body">
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Полное имя:</label>
+                    <span>{{ user.fullName }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Имя пользователя:</label>
+                    <span>{{ user.username }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Email:</label>
+                    <span>{{ user.mail or '—' }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Телефон:</label>
+                    <span>{{ user.phone or '—' }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Роль:</label>
+                    <span class="badge badge-info">
+                        {{ {
+                            'admin': 'Администратор',
+                            'mechanic': 'Механик',
+                            'manager': 'Менеджер'
+                        }[user.role] }}
+                    </span>
+                </div>
+                <div class="info-item">
+                    <label>Статус:</label>
+                    <span class="badge {{ 'badge-success' if user.isBlocked == 'false' else 'badge-danger' }}">
+                        {{ 'Активен' if user.isBlocked == 'false' else 'Заблокирован' }}
+                    </span>
+                </div>
+                <div class="info-item">
+                    <label>Количество попыток входа:</label>
+                    <span>{{ user.loginAttempts or 0 }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Дата регистрации:</label>
+                    <span>{{ user.passwordDate.strftime('%d.%m.%Y %H:%M') if user.passwordDate else '—' }}</span>
+                </div>
+                {% if user.blockedUntil %}
+                <div class="info-item">
+                    <label>Блокировка до:</label>
+                    <span>{{ user.blockedUntil.strftime('%d.%m.%Y %H:%M') if user.blockedUntil else '—' }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Дополнительные действия -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Действия</h3>
+        </div>
+        <div class="card-body">
+            <div class="actions-grid">
+                <a href="{{ url_for('edit_user', user_id=user.userID) }}" class="btn btn-outline">
+                    <i class="fas fa-edit"></i>
+                    Редактировать профиль
+                </a>
+
+                {% if user.role == 'mechanic' %}
+                <a href="{{ url_for('view_mechanic', mechanic_id=user.userID) }}" class="btn btn-primary">
+                    <i class="fas fa-tools"></i>
+                    Перейти к просмотру механика
+                </a>
+                {% endif %}
+
+                {% if user.userID != current_user.userID %}
+                <div class="action-icon-group">
+                    <a href="#" 
+                    class="btn btn-outline toggle-block-btn"
+                    data-user-id="{{ user.userID }}"
+                    data-is-blocked="{{ user.isBlocked }}"
+                    title="{{ 'Разблокировать' if user.isBlocked == 'true' else 'Заблокировать' }}">
+                        <i class="fas {{ 'fa-lock-open' if user.isBlocked == 'true' else 'fa-lock' }}"></i>
+                        {{ 'Разблокировать' if user.isBlocked == 'true' else 'Заблокировать' }}
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleBlock(userId, currentStatus) {
+    if (confirm(`Вы уверены, что хотите ${currentStatus === 'true' ? 'разблокировать' : 'заблокировать'} пользователя?`)) {
+        fetch(`/admin/users/${userId}/toggle_block`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Ошибка при изменении статуса пользователя');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Ошибка при изменении статуса пользователя');
+        });
+    }
+}
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.toggle-block-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const userId = this.dataset.userId;
+            const isBlocked = this.dataset.isBlocked;
+            
+            if (confirm(`Вы уверены, что хотите ${isBlocked === 'true' ? 'разблокировать' : 'заблокировать'} пользователя?`)) {
+                fetch(`/admin/users/${userId}/toggle_block`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Ошибка при изменении статуса пользователя');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Ошибка при изменении статуса пользователя');
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

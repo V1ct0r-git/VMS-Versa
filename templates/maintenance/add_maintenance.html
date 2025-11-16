@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}Добавить запись ТО{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <!-- Заголовок и кнопка назад -->
+        <div class="page-header">
+            <div class="page-title-section">
+                <h1 class="card-title"><i class="fas fa-plus-circle"></i> Добавить запись технического обслуживания</h1>
+                <p class="page-subtitle">Создание новой записи ТО</p>
+            </div>
+            <div class="page-actions">
+                <a href="{{ url_for('maintenance_records') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Назад к списку
+                </a>
+            </div>
+        </div>
+
+        <!-- Форма добавления -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-file-alt"></i> Новая запись ТО</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" class="maintenance-form">
+                    <!-- Верхняя строка: Автомобиль, Тип ТО, Механик -->
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="car_id" class="form-label">Автомобиль:</label>
+                            <select name="car_id" id="car_id" class="form-control" required>
+                                <option value="">Выберите автомобиль</option>
+                                {% for car in vehicles %}  <!-- Исправлено: было cars -->
+                                <option value="{{ car.CarID }}">{{ car.brand }} {{ car.model }} ({{ car.licensePlate }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="type-select" class="form-label">Тип работы:</label>
+                            <select name="type_id" id="type-select" class="form-control" required onchange="updateCostInfo()">
+                                <option value="">Выберите тип работы</option>
+                                {% for type in types %}
+                                <option value="{{ type.typeID }}" data-estimated-cost="{{ type.estimatedCost }}" data-estimated-duration="{{ type.estimatedDuration }}">
+                                    {{ type.name }} ({{ type.estimatedCost }} ₽, {{ type.estimatedDuration }} ч)
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="user_id" class="form-label">Механик:</label>
+                            <select name="user_id" id="user_id" class="form-control" required>
+                                <option value="">Выберите механика</option>
+                                {% for user in mechanics %}
+                                <option value="{{ user.userID }}">{{ user.fullName }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Средняя строка: Приоритет, Дата начала, Дата завершения -->
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="priority" class="form-label">Приоритет:</label>
+                            <select name="priority" id="priority" class="form-control" required>
+                                <option value="low">Низкий</option>
+                                <option value="medium">Средний</option>
+                                <option value="high">Высокий</option>
+                                <option value="critical">Критический</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="start_date" class="form-label">Дата начала:</label>
+                            <input type="date" name="start_date" id="start_date" class="form-control" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="complete_date" class="form-label">Дата завершения:</label>
+                            <input type="date" name="complete_date" id="complete_date" class="form-control">
+                        </div>
+                    </div>
+
+                    <!-- Информация о стоимости -->
+                    <div id="cost-info" class="alert alert-info" style="display: none;">
+                        <strong>Расчёт стоимости:</strong><br>
+                        Запчасти: <span id="parts-cost-display">0.00</span> ₽<br>
+                        Работы: <span id="labor-cost-display">0.00</span> ₽ (по ставке 500 ₽/час)<br>
+                        <strong>Итого: <span id="total-cost-display">0.00</span> ₽</strong>
+                    </div>
+
+                    <!-- Кнопки -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus"></i>
+                            Добавить запись
+                        </button>
+                        <a href="{{ url_for('maintenance_records') }}" class="btn btn-outline">
+                            <i class="fas fa-times"></i>
+                            Отмена
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function updateCostInfo() {
+        const select = document.getElementById('type-select');
+        const option = select.options[select.selectedIndex];
+        
+        if (!option.value) {
+            document.getElementById('cost-info').style.display = 'none';
+            return;
+        }
+        
+        const estimatedCost = parseFloat(option.dataset.estimatedCost);
+        const estimatedDuration = parseFloat(option.dataset.estimatedDuration);
+        const laborRate = 500.0; // ₽ за час
+        const laborCost = estimatedDuration * laborRate;
+        const totalCost = estimatedCost + laborCost;
+        
+        document.getElementById('parts-cost-display').textContent = estimatedCost.toFixed(2);
+        document.getElementById('labor-cost-display').textContent = laborCost.toFixed(2);
+        document.getElementById('total-cost-display').textContent = totalCost.toFixed(2);
+        document.getElementById('cost-info').style.display = 'block';
+    }
+    </script>
+
+    <style>
+        .page-title-section {
+            flex: 1;
+        }
+
+        .page-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .page-subtitle {
+            color: var(--text-light);
+            margin: 0.25rem 0 0 0;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .form-control {
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 1rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.1);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-light);
+        }
+
+        @media screen and (max-width: 768px) {
+            .page-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            .page-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+{% endblock %}

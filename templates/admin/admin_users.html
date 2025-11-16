@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block title %}Управление пользователями - Верса{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <div>
+            <h1 class="card-title">Управление пользователями</h1>
+            <p class="text-muted">Создание, редактирование и блокировка пользователей системы</p>
+        </div>
+        <div>
+            <button class="btn btn-primary" onclick="addUser()">
+                <i class="fas fa-user-plus"></i>
+                Добавить пользователя
+            </button>
+        </div>
+    </div>
+
+    <!-- Фильтры -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Фильтры</h3>
+        </div>
+        <div class="card-body">
+            <form class="filter-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Роль</label>
+                        <select name="role" class="form-control">
+                            <option value="">Все роли</option>
+                            <option value="admin">Администратор</option>
+                            <option value="mechanic">Механик</option>
+                            <option value="manager">Менеджер</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Статус</label>
+                        <select name="status" class="form-control">
+                            <option value="">Все статусы</option>
+                            <option value="active">Активный</option>
+                            <option value="blocked">Заблокирован</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Поиск</label>
+                        <input type="text" name="search" class="form-control" placeholder="Поиск по имени...">
+                    </div>
+                </div>
+                
+                <div class="filter-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-filter"></i>
+                        Применить
+                    </button>
+                    <a href="{{ url_for('admin_users') }}" class="btn btn-outline">
+                        <i class="fas fa-times"></i>
+                        Сбросить
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Таблица пользователей -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Список пользователей</h3>
+        </div>
+        <div class="card-body">
+            {% if users %}
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Имя</th>
+                                <th>Имя пользователя</th>
+                                <th>Email</th>
+                                <th>Телефон</th>
+                                <th>Роль</th>
+                                <th>Статус</th>
+                                <th>Попытки входа</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                                <tr>
+                                    <td data-label="Имя">{{ user.fullName }}</td>
+                                    <td data-label="Имя пользователя">{{ user.username }}</td>
+                                    <td data-label="Email">{{ user.mail }}</td>
+                                    <td data-label="Телефон">{{ user.phone or '—' }}</td>
+                                    <td data-label="Роль">
+                                        <span class="badge badge-info">
+                                            {{ {
+                                                'admin': 'Администратор',
+                                                'mechanic': 'Механик',
+                                                'manager': 'Менеджер'
+                                            }[user.role] }}
+                                        </span>
+                                    </td>
+                                    <td data-label="Статус">
+                                        <span class="badge {{ 'badge-success' if user.isBlocked == 'false' else 'badge-danger' }}">
+                                            {{ 'Активен' if user.isBlocked == 'false' else 'Заблокирован' }}
+                                        </span>
+                                    </td>
+                                    <td data-label="Попытки входа">{{ user.loginAttempts or 0 }}</td>
+                                    <td data-label="Действия">
+                                        <div class="table-actions">
+                                            <a href="{{ url_for('view_user', user_id=user.userID) }}" 
+                                            class="btn btn-sm btn-outline" title="Просмотр">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ url_for('edit_user', user_id=user.userID) }}" 
+                                            class="btn btn-sm btn-outline" title="Редактировать">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            {% if user.userID != current_user.userID %}
+                                            <button class="btn btn-sm btn-outline toggle-block-btn"
+                                                    data-user-id="{{ user.userID }}"
+                                                    data-is-blocked="{{ user.isBlocked }}"
+                                                    title="{{ 'Разблокировать' if user.isBlocked == 'true' else 'Заблокировать' }}">
+                                                <i class="fas {{ 'fa-lock-open' if user.isBlocked == 'true' else 'fa-lock' }}"></i>
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="no-data">
+                    <i class="fas fa-users"></i>
+                    <h3>Нет пользователей</h3>
+                    <p>Создайте первого пользователя, чтобы начать работу</p>
+                    <button class="btn btn-primary" onclick="addUser()">
+                        <i class="fas fa-user-plus"></i>
+                        Добавить пользователя
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function addUser() {
+    alert('Функция добавления пользователя будет реализована в следующей версии');
+}
+
+function toggleBlock(userId, currentStatus) {
+    if (confirm(`Вы уверены, что хотите ${currentStatus === 'true' ? 'разблокировать' : 'заблокировать'} пользователя?`)) {
+        fetch(`/admin/users/${userId}/toggle_block`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Ошибка при изменении статуса пользователя');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Ошибка при изменении статуса пользователя');
+        });
+    }
+}
+
+function deleteUser(userId) {
+    if (confirm('Вы уверены, что хотите удалить пользователя? Это действие необратимо!')) {
+        fetch(`/admin/users/${userId}/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Ошибка при удалении пользователя: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Ошибка при удалении пользователя');
+        });
+    }
+}
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.toggle-block-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const userId = this.dataset.userId;
+            const isBlocked = this.dataset.isBlocked;
+            
+            if (confirm(`Вы уверены, что хотите ${isBlocked === 'true' ? 'разблокировать' : 'заблокировать'} пользователя?`)) {
+                fetch(`/admin/users/${userId}/toggle_block`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Ошибка при изменении статуса пользователя');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Ошибка при изменении статуса пользователя');
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

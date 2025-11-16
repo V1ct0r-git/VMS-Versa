@@ -1,0 +1,363 @@
+<!-- templates/reports/mechanic_performance.html -->
+{% extends "reports_base.html" %}
+
+{% set page_title = "Производительность механиков" %}
+{% set active_report = "mechanic_performance" %}
+
+{% block head %}
+    {{ super() }} <!-- Наследуем базовые стили из reports_base.html -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/reports.css') }}">
+{% endblock %}
+
+{% block reports_content %}
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Фильтры отчета</h3>
+        </div>
+        <div class="card-body">
+            <form id="reportMechanicPerformanceForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Дата начала</label>
+                        <input type="date" name="date_from" class="form-control" id="reportMechanicPerformanceDateFrom" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Дата окончания</label>
+                        <input type="date" name="date_to" class="form-control" id="reportMechanicPerformanceDateTo" required>
+                    </div>
+                </div>
+
+                <div class="filter-actions">
+                    <button type="button" class="btn btn-primary" onclick="generateReport('mechanic_performance')">
+                        <i class="fas fa-chart-bar"></i>
+                        Сформировать отчет
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="resetReportFilters('mechanic_performance')">
+                        <i class="fas fa-times"></i>
+                        Сбросить
+                    </button>
+                    <button type="button" class="btn btn-outline-success" onclick="printReport()">
+                        <i class="fas fa-print"></i>
+                        Печать
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Результат отчета</h3>
+        </div>
+        <div class="card-body">
+            <div id="reportMechanicPerformanceResultContainer">
+                <!-- Сюда будет загружаться результат отчета -->
+                <p class="text-muted">Результаты отчета будут отображены здесь.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Глобальная переменная для хранения данных фильтрации
+        let currentReportFilters = {
+            date_from: '',
+            date_to: ''
+        };
+
+        // Функция для форматирования даты в 'DD.MM.YYYY' (уже есть в car_history, можно использовать ту же)
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return dateString;
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}.${month}.${year}`;
+        }
+
+        // Функция для генерации отчета
+        function generateReport(reportType) {
+            let formId;
+            switch(reportType) {
+                case 'mechanic_performance':
+                    formId = 'reportMechanicPerformanceForm';
+                    break;
+                case 'car_history':
+                    formId = 'reportCarHistoryForm';
+                    break;
+                default:
+                    console.error("Неизвестный тип отчета:", reportType);
+                    return;
+            }
+
+            const formData = new FormData(document.getElementById(formId));
+            const params = Object.fromEntries(formData.entries());
+            params.report_type = reportType;
+
+            // Сохраняем текущие фильтры в глобальной переменной
+            currentReportFilters = {
+                date_from: params.date_from,
+                date_to: params.date_to
+            };
+
+            // Проверка обязательных полей (для mechanic_performance)
+            if (reportType === 'mechanic_performance' && (!params.date_from || !params.date_to)) {
+                alert('Пожалуйста, укажите даты начала и окончания периода');
+                return;
+            }
+
+            fetch('/reports/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(params)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errData => { throw new Error(errData.error || 'Неизвестная ошибка'); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if(data.success) {
+                    let containerId;
+                    switch(reportType) {
+                        case 'mechanic_performance':
+                            containerId = 'reportMechanicPerformanceResultContainer';
+                            break;
+                        case 'car_history':
+                            containerId = 'reportCarHistoryResultContainer';
+                            break;
+                        default:
+                            console.error("Неизвестный тип отчета для контейнера:", reportType);
+                            return;
+                    }
+                    displayReportResult(data, containerId);
+                } else {
+                    throw new Error(data.error || 'Неизвестная ошибка');
+                }
+            })
+            .catch(error => {
+                console.error(`Error generating ${reportType} report:`, error);
+                alert(`Ошибка при генерации отчета ${reportType}: ${error.message}`);
+            });
+        }
+
+        // Функция для отображения результата отчета
+        function displayReportResult(data, containerId) {
+            const container = document.getElementById(containerId);
+            if (data.success && data.rows && Array.isArray(data.rows)) {
+                if (data.rows.length > 0) {
+                    let cardsHtml = '<div class="report-cards-grid">';
+                    data.rows.forEach(row => {
+                        // Округляем общую стоимость до двух знаков после запятой
+                        const totalCost = parseFloat(row.total_cost).toFixed(2);
+                        // Рассчитываем среднюю стоимость на одну работу (если работ больше нуля)
+                        const avgCostPerWork = row.total_works_count > 0 ? (parseFloat(row.total_cost) / row.total_works_count).toFixed(2) : '0.00';
+
+                        // Собираем HTML для карточки
+                        cardsHtml += `
+                            <div class="report-card">
+                                <div class="card-header">
+                                    <span class="record-type">Механик</span>
+                                    <span class="record-id">#${row.mechanicID}</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="card-field">
+                                        <strong>Имя:</strong> ${row.fullName}
+                                    </div>
+                                    <div class="card-field">
+                                        <strong>Общее количество работ:</strong> ${row.total_works_count}
+                                    </div>
+                                    <div class="card-field">
+                                        <strong>Общая стоимость:</strong> ${totalCost} ₽
+                                    </div>
+                                    <div class="card-field">
+                                        <strong>Средняя стоимость работы:</strong> ${avgCostPerWork} ₽
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    cardsHtml += '</div>';
+                    container.innerHTML = cardsHtml;
+                } else {
+                    container.innerHTML = '<p class="text-info">По заданным фильтрам ничего не найдено.</p>';
+                }
+            } else {
+                container.innerHTML = `<p class="text-danger">Ошибка: ${data.error || 'Неверный формат данных отчета.'}</p>`;
+            }
+        }
+
+        // Функция для сброса фильтров
+        function resetReportFilters(reportType) {
+             let formId, containerId;
+             switch(reportType) {
+                 case 'mechanic_performance':
+                     formId = 'reportMechanicPerformanceForm';
+                     containerId = 'reportMechanicPerformanceResultContainer';
+                     break;
+                 case 'car_history':
+                     formId = 'reportCarHistoryForm';
+                     containerId = 'reportCarHistoryResultContainer';
+                     break;
+                 default:
+                     console.error("Неизвестный тип отчета для сброса:", reportType);
+                     return;
+             }
+             document.getElementById(formId).reset();
+             document.getElementById(containerId).innerHTML = '<p class="text-muted">Результаты отчета будут отображены здесь.</p>';
+         }
+
+        // Функция для печати таблицы с информацией о фильтрах
+        function printReport() {
+            // Создаем новый элемент div для печати
+            const printContent = document.createElement('div');
+
+            // Получаем даты из глобальной переменной
+            const dateFrom = currentReportFilters.date_from || 'Не указано';
+            const dateTo = currentReportFilters.date_to || 'Не указано';
+
+            // Добавляем заголовок с информацией о фильтрах
+            printContent.innerHTML = `
+                <h2>Производительность механиков</h2>
+                <p><strong>Период:</strong> с ${dateFrom} по ${dateTo}</p>
+                <hr>
+            `;
+
+            // Проверяем, есть ли данные для печати
+            const cardsGrid = document.querySelector('.report-cards-grid');
+            if (!cardsGrid) {
+                printContent.innerHTML += '<p class="text-danger">Нет данных для печати.</p>';
+                return;
+            }
+
+            // Создаем HTML-таблицу
+            let tableHtml = `
+                <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse; font-size: 9pt;">
+                    <thead>
+                        <tr style="background-color: #f8f9fa; text-align: left;">
+                            <th>ID</th>
+                            <th>Имя</th>
+                            <th>Общее количество работ</th>
+                            <th>Общая стоимость (₽)</th>
+                            <th>Средняя стоимость работы (₽)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            // Перебираем все карточки и извлекаем из них данные для таблицы
+            const cardElements = document.querySelectorAll('.report-card');
+            if (cardElements.length > 0) {
+                cardElements.forEach(card => {
+                    // Извлекаем данные из DOM-элементов карточки
+                    const id = card.querySelector('.record-id')?.textContent.replace('#', '') || '';
+
+                    // Функция для извлечения текста из .card-field, исключая <strong>
+                    function extractFieldValue(fieldElement) {
+                        if (!fieldElement) return '';
+                        let text = '';
+                        for (let node of fieldElement.childNodes) {
+                            if (node.nodeType === Node.TEXT_NODE) {
+                                text += node.textContent.trim();
+                            } else if (node.nodeType === Node.ELEMENT_NODE && node.tagName !== 'STRONG') {
+                                // Если это элемент, но не <strong>, добавляем его текст
+                                text += node.textContent.trim();
+                            }
+                        }
+                        return text;
+                    }
+
+                    // Извлекаем значения для каждого поля
+                    const fields = card.querySelectorAll('.card-field');
+                    const fullName = fields[0] ? extractFieldValue(fields[0]) : '';
+                    const totalWorksCount = fields[1] ? extractFieldValue(fields[1]) : '';
+                    const totalCost = fields[2] ? extractFieldValue(fields[2]) : '';
+                    const avgCostPerWork = fields[3] ? extractFieldValue(fields[3]) : '';
+
+                    // Добавляем строку в таблицу
+                    tableHtml += `
+                        <tr>
+                            <td>${id}</td>
+                            <td>${fullName}</td>
+                            <td>${totalWorksCount}</td>
+                            <td>${totalCost}</td>
+                            <td>${avgCostPerWork}</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                tableHtml += `<tr><td colspan="5" style="text-align: center;">Нет данных</td></tr>`;
+            }
+
+            tableHtml += `
+                    </tbody>
+                </table>
+            `;
+
+            // Добавляем таблицу в контент для печати
+            printContent.innerHTML += tableHtml;
+
+            // Создаем новое окно для печати
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Печать отчета</title>
+                        <style>
+                            body { 
+                                font-family: Arial, sans-serif; 
+                                margin: 20px; 
+                                font-size: 9pt; /* Уменьшаем шрифт */
+                            }
+                            h2 { 
+                                text-align: center; 
+                                margin-bottom: 10px;
+                            }
+                            p { 
+                                margin-bottom: 5px; 
+                                font-size: 9pt;
+                            }
+                            hr {
+                                margin: 10px 0;
+                            }
+                            table {
+                                width: 100%;
+                                border-collapse: collapse;
+                                font-size: 9pt;
+                                page-break-inside: auto;
+                            }
+                            th, td {
+                                padding: 4px;
+                                border: 1px solid #ddd;
+                                vertical-align: top;
+                                word-wrap: break-word;
+                            }
+                            th {
+                                background-color: #f8f9fa;
+                                font-weight: bold;
+                                text-align: left;
+                            }
+                            tr {
+                                page-break-inside: avoid;
+                            }
+                            .page-break {
+                                page-break-before: always;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        ${printContent.innerHTML}
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+            // printWindow.close(); // Закомментировано, чтобы пользователь мог сохранить PDF
+        }
+    </script>
+{% endblock %}

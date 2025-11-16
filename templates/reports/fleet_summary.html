@@ -1,0 +1,421 @@
+<!-- templates/reports/fleet_summary.html -->
+{% extends "reports_base.html" %}
+
+{% set page_title = "Сводка по автопарку" %}
+{% set active_report = "fleet_summary" %}
+
+{% block head %}
+    {{ super() }} <!-- Наследуем базовые стили из reports_base.html -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/reports.css') }}">
+{% endblock %}
+
+{% block reports_content %}
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Фильтры отчета</h3>
+        </div>
+        <div class="card-body">
+            <form id="reportFleetSummaryForm">
+                <div class="form-grid">
+                    <!-- При необходимости можно добавить фильтры, но пока пустой блок для консистентности -->
+                    <p class="text-muted">Фильтры для этого отчета отсутствуют.</p>
+                </div>
+
+                <div class="filter-actions">
+                    <button type="button" class="btn btn-primary" onclick="generateReport('fleet_summary')">
+                        <i class="fas fa-chart-bar"></i>
+                        Сформировать отчет
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="resetReportFilters('fleet_summary')">
+                        <i class="fas fa-times"></i>
+                        Сбросить
+                    </button>
+                    <button type="button" class="btn btn-outline-success" onclick="printReport()">
+                        <i class="fas fa-print"></i>
+                        Печать
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Результат отчета</h3>
+        </div>
+        <div class="card-body">
+            <div id="reportFleetSummaryResultContainer">
+                <!-- Сюда будет загружаться результат отчета -->
+                <p class="text-muted">Результаты отчета будут отображены здесь.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Глобальная переменная для хранения данных фильтрации (оставляем для консистентности, хотя фильтры отсутствуют)
+        if (typeof currentReportFilters === 'undefined') {
+            let currentReportFilters = {};
+        }
+
+        // Функция для форматирования числа как денежной суммы
+        function formatCurrency(amount) {
+            return parseFloat(amount).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+        }
+
+        // Функция для форматирования чисел с фиксированным количеством знаков после запятой
+        function formatNumber(number, decimals = 2) {
+            if (number === null || number === undefined) return '0.00';
+            return parseFloat(number).toFixed(decimals);
+        }
+
+        // Функция для генерации отчета
+        function generateReport(reportType) {
+            let formId;
+            switch(reportType) {
+                case 'costs_by_period':
+                    formId = 'reportCostsByPeriodForm';
+                    break;
+                case 'maintenance_log':
+                    formId = 'reportMaintenanceLogForm';
+                    break;
+                case 'mechanic_performance':
+                    formId = 'reportMechanicPerformanceForm';
+                    break;
+                case 'car_history':
+                    formId = 'reportCarHistoryForm';
+                    break;
+                case 'fleet_summary':
+                    formId = 'reportFleetSummaryForm';
+                    break;
+                default:
+                    console.error("Неизвестный тип отчета:", reportType);
+                    return;
+            }
+
+            const formData = new FormData(document.getElementById(formId));
+            const params = Object.fromEntries(formData.entries());
+            params.report_type = reportType;
+
+            // Сохраняем текущие фильтры в глобальной переменной (для отчета сводки они пустые)
+            if (reportType === 'fleet_summary') {
+                currentReportFilters = {};
+            }
+
+            // Проверка обязательных полей (для других отчетов, для fleet_summary проверки нет)
+            if (reportType === 'costs_by_period' && (!params.date_from || !params.date_to)) {
+                alert('Пожалуйста, укажите даты начала и окончания периода');
+                return;
+            }
+
+            fetch('/reports/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(params)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errData => { throw new Error(errData.error || 'Неизвестная ошибка'); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if(data.success) {
+                    let containerId;
+                    switch(reportType) {
+                        case 'costs_by_period':
+                            containerId = 'reportCostsByPeriodResultContainer';
+                            break;
+                        case 'maintenance_log':
+                            containerId = 'reportMaintenanceLogResultContainer';
+                            break;
+                        case 'mechanic_performance':
+                            containerId = 'reportMechanicPerformanceResultContainer';
+                            break;
+                        case 'car_history':
+                            containerId = 'reportCarHistoryResultContainer';
+                            break;
+                        case 'fleet_summary':
+                            containerId = 'reportFleetSummaryResultContainer';
+                            break;
+                        default:
+                            console.error("Неизвестный тип отчета для контейнера:", reportType);
+                            return;
+                    }
+                    displayReportResult(data, containerId);
+                } else {
+                    throw new Error(data.error || 'Неизвестная ошибка');
+                }
+            })
+            .catch(error => {
+                console.error(`Error generating ${reportType} report:`, error);
+                alert(`Ошибка при генерации отчета ${reportType}: ${error.message}`);
+            });
+        }
+
+        // Функция для отображения результата отчета
+        function displayReportResult(data, containerId) {
+            const container = document.getElementById(containerId);
+            if (data.success && data.rows && Array.isArray(data.rows)) {
+                if (data.rows.length > 0) {
+                    // Разделяем данные по секциям
+                    const summaryData = data.rows.find(row => row.section_type === 'summary');
+                    const statusData = data.rows.filter(row => row.section_type === 'status');
+                    const brandData = data.rows.filter(row => row.section_type === 'brand');
+                    const modelData = data.rows.filter(row => row.section_type === 'model');
+
+                    let html = '';
+
+                    // --- Сводка ---
+                    if (summaryData) {
+                        html += `
+                            <div class="section">
+                                <h4>Общая информация</h4>
+                                <div class="summary-stats">
+                                    <div class="stat-card">
+                                        <h4>Всего автомобилей</h4>
+                                        <div class="stat-value">${summaryData.total_cars || 0}</div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <h4>Средний пробег</h4>
+                                        <div class="stat-value">${formatNumber(summaryData.avg_mileage, 0)} км</div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <h4>Средний интервал ТО</h4>
+                                        <div class="stat-value">${formatNumber(summaryData.avg_maintenance_interval, 0)} км</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    // --- Данные по статусам ---
+                    if (statusData.length > 0) {
+                        html += `
+                            <div class="section">
+                                <h4>Распределение по статусам</h4>
+                                <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse; font-size: 9pt;">
+                                    <thead>
+                                        <tr style="background-color: #f8f9fa; text-align: left;">
+                                            <th>Статус</th>
+                                            <th>Количество</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                        `;
+                        statusData.forEach(row => {
+                            html += `
+                                <tr>
+                                    <td>${row.status_name || 'N/A'}</td>
+                                    <td>${row.status_count || 0}</td>
+                                </tr>
+                            `;
+                        });
+                        html += `
+                                    </tbody>
+                                </table>
+                            </div>
+                        `;
+                    }
+
+                    // --- Данные по брендам ---
+                    if (brandData.length > 0) {
+                        html += `
+                            <div class="section">
+                                <h4>Распределение по брендам</h4>
+                                <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse; font-size: 9pt;">
+                                    <thead>
+                                        <tr style="background-color: #f8f9fa; text-align: left;">
+                                            <th>Бренд</th>
+                                            <th>Количество</th>
+                                            <th>Ср. пробег</th>
+                                            <th>Ср. интервал ТО</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                        `;
+                        brandData.forEach(row => {
+                            html += `
+                                <tr>
+                                    <td>${row.brand_name || 'N/A'}</td>
+                                    <td>${row.brand_count || 0}</td>
+                                    <td>${formatNumber(row.model_avg_mileage, 0)} км</td>
+                                    <td>${formatNumber(row.model_avg_maintenance_interval, 0)} км</td>
+                                </tr>
+                            `;
+                        });
+                        html += `
+                                    </tbody>
+                                </table>
+                            </div>
+                        `;
+                    }
+
+                    // --- Данные по моделям ---
+                    if (modelData.length > 0) {
+                        html += `
+                            <div class="section">
+                                <h4>Распределение по моделям</h4>
+                                <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse; font-size: 9pt;">
+                                    <thead>
+                                        <tr style="background-color: #f8f9fa; text-align: left;">
+                                            <th>Модель</th>
+                                            <th>Количество</th>
+                                            <th>Ср. пробег</th>
+                                            <th>Ср. интервал ТО</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                        `;
+                        modelData.forEach(row => {
+                            html += `
+                                <tr>
+                                    <td>${row.car_model || 'N/A'}</td>
+                                    <td>${row.model_count || 0}</td>
+                                    <td>${formatNumber(row.model_avg_mileage, 0)} км</td>
+                                    <td>${formatNumber(row.model_avg_maintenance_interval, 0)} км</td>
+                                </tr>
+                            `;
+                        });
+                        html += `
+                                    </tbody>
+                                </table>
+                            </div>
+                        `;
+                    }
+
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<p class="text-info">Нет данных для отображения.</p>';
+                }
+            } else {
+                container.innerHTML = `<p class="text-danger">Ошибка: ${data.error || 'Неверный формат данных отчета.'}</p>`;
+            }
+        }
+
+        // Функция для сброса фильтров
+        function resetReportFilters(reportType) {
+             let formId, containerId;
+             switch(reportType) {
+                 case 'costs_by_period':
+                     formId = 'reportCostsByPeriodForm';
+                     containerId = 'reportCostsByPeriodResultContainer';
+                     break;
+                 case 'maintenance_log':
+                     formId = 'reportMaintenanceLogForm';
+                     containerId = 'reportMaintenanceLogResultContainer';
+                     break;
+                 case 'mechanic_performance':
+                     formId = 'reportMechanicPerformanceForm';
+                     containerId = 'reportMechanicPerformanceResultContainer';
+                     break;
+                 case 'car_history':
+                     formId = 'reportCarHistoryForm';
+                     containerId = 'reportCarHistoryResultContainer';
+                     break;
+                 case 'fleet_summary':
+                     formId = 'reportFleetSummaryForm';
+                     containerId = 'reportFleetSummaryResultContainer';
+                     break;
+                 default:
+                     console.error("Неизвестный тип отчета для сброса:", reportType);
+                     return;
+             }
+             document.getElementById(formId).reset();
+             document.getElementById(containerId).innerHTML = '<p class="text-muted">Результаты отчета будут отображены здесь.</p>';
+         }
+
+        // Функция для печати таблицы
+        function printReport() {
+            // Создаем новый элемент div для печати
+            const printContent = document.createElement('div');
+
+            // Добавляем заголовок
+            printContent.innerHTML = `
+                <h2>Сводка по автопарку</h2>
+                <p><strong>Дата формирования:</strong> ${new Date().toLocaleDateString('ru-RU')}</p>
+                <hr>
+            `;
+
+            // Копируем содержимое контейнера отчета
+            const reportContainer = document.getElementById('reportFleetSummaryResultContainer');
+            if (reportContainer) {
+                const containerClone = reportContainer.cloneNode(true);
+                // Убираем кнопки и другие элементы, не нужные для печати, если они есть
+                // Убираем классы стилей, специфичные для экрана
+                printContent.appendChild(containerClone);
+            }
+
+            // Создаем новое окно для печати
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Печать отчета</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; margin: 20px; font-size: 9pt; }
+                            h2, h4 { margin-top: 0; margin-bottom: 10px; }
+                            p { margin-bottom: 5px; font-size: 9pt; }
+                            hr { margin: 10px 0; }
+                            table {
+                                width: 100%;
+                                border-collapse: collapse;
+                                font-size: 9pt;
+                                page-break-inside: auto;
+                            }
+                            th, td {
+                                padding: 6px;
+                                border: 1px solid #ddd;
+                                vertical-align: top;
+                                word-wrap: break-word;
+                            }
+                            th {
+                                background-color: #f8f9fa;
+                                font-weight: bold;
+                                text-align: left;
+                            }
+                            tr {
+                                page-break-inside: avoid;
+                            }
+                            .summary-stats {
+                                display: flex;
+                                gap: 20px;
+                                margin-bottom: 20px;
+                                flex-wrap: wrap;
+                            }
+                            .stat-card {
+                                background: white;
+                                border: 1px solid #ddd;
+                                border-radius: 8px;
+                                padding: 15px;
+                                text-align: center;
+                                flex: 1;
+                                min-width: 200px;
+                            }
+                            .stat-card h4 {
+                                margin: 0 0 10px 0;
+                                font-size: 1em;
+                            }
+                            .stat-card .stat-value {
+                                font-size: 1.5em;
+                                font-weight: bold;
+                                color: #2c3e50;
+                            }
+                            .section {
+                                margin-bottom: 20px;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        ${printContent.innerHTML}
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+            // printWindow.close(); // Закомментировано, чтобы пользователь мог сохранить PDF
+        }
+    </script>
+{% endblock %}

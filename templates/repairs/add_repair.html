@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Добавить ремонт - {{ system_info.system.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <div class="page-title-section">
+            <h1 class="card-title"><i class="fas fa-tools"></i> Добавить ремонт</h1>
+            <p class="page-subtitle">Создание новой записи ремонтных работ</p>
+        </div>
+        <div class="page-actions">
+            <a href="{{ url_for('repairs') }}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i> Назад
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="POST" class="form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Автомобиль <span class="required">*</span></label>
+                        <select name="car_id" class="form-control" required>
+                            <option value="">Выберите автомобиль</option>
+                            {% for car in vehicles %}
+                            <option value="{{ car.CarID }}">
+                                {{ car.brand }} {{ car.model }} ({{ car.licensePlate }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Тип ремонта <span class="required">*</span></label>
+                        <select name="repair_type" class="form-control" required>
+                            <option value="engine">Двигатель</option>
+                            <option value="transmission">Трансмиссия</option>
+                            <option value="brakes">Тормоза</option>
+                            <option value="electrical">Электрика</option>
+                            <option value="body">Кузов</option>
+                            <option value="other">Другое</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Приоритет <span class="required">*</span></label>
+                        <select name="priority" class="form-control" required>
+                            <option value="low">Низкий</option>
+                            <option value="medium">Средний</option>
+                            <option value="high">Высокий</option>
+                            <option value="critical">Критический</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Статус <span class="required">*</span></label>
+                        <select name="status" class="form-control" required>
+                            <option value="planned">Запланировано</option>
+                            <option value="in_progress">В процессе</option>
+                            <option value="completed">Завершено</option>
+                            <option value="cancelled">Отменено</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Дата ремонта</label>
+                        <input type="date" name="date" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Срок гарантии</label>
+                        <input type="date" name="warranty_expiry" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Причина</label>
+                        <input type="text" name="reason" class="form-control" placeholder="Причина поломки...">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Стоимость (₽)</label>
+                        <input type="number" step="0.01" name="cost" class="form-control" placeholder="0.00" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Название услуги</label>
+                        <input type="text" name="service_name" class="form-control" placeholder="Например: Замена тормозных колодок">
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label class="form-label">Описание работ</label>
+                    <textarea name="description" class="form-control" rows="4" placeholder="Подробное описание ремонтных работ..."></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Сохранить ремонт
+                    </button>
+                    <a href="{{ url_for('repairs') }}" class="btn btn-outline">
+                        <i class="fas fa-times"></i>
+                        Отмена
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Стили остаются те же, что и в предыдущей версии */
+</style>
+{% endblock %}

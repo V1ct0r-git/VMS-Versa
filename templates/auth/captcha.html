@@ -1,0 +1,113 @@
+<!-- templates/captcha.html -->
+<div id="captcha-block" class="captcha-section">
+    <h3>Проверка безопасности</h3>
+    <p>Перетащите изображения в правильном порядке, чтобы собрать полную картинку.</p>
+
+    <!-- Контейнер для сборки изображения -->
+    <div class="captcha-grid">
+        {% for pos in range(4) %}
+        <div class="captcha-slot" data-position="{{ pos + 1 }}">
+            <div class="captcha-piece draggable"
+                 data-original="{{ parts_order[pos] }}"
+                 draggable="true"
+                 ondragstart="drag(event)">
+                <img src="{{ url_for('static', filename='captcha_parts/part' + parts_order[pos]|string + '.png') }}" alt="Часть {{ parts_order[pos] }}">
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <button type="button" id="check-captcha-btn" class="btn btn-primary mt-3">
+        Проверить капчу
+    </button>
+</div>
+
+<script>
+let draggedElement = null;
+
+function drag(ev) {
+    draggedElement = ev.target.closest('.captcha-piece');
+    ev.dataTransfer.setData("text/plain", "");
+}
+
+document.querySelectorAll('.captcha-slot').forEach(slot => {
+    slot.addEventListener('dragover', function(e) {
+        e.preventDefault();
+    });
+
+    slot.addEventListener('drop', function(e) {
+        e.preventDefault();
+
+        const targetSlot = e.target.closest('.captcha-slot');
+        const targetPiece = targetSlot.querySelector('.captcha-piece');
+
+        if (draggedElement && targetPiece && draggedElement !== targetPiece) {
+            const draggedSlot = draggedElement.parentElement;
+            const targetOriginalParent = targetPiece.parentElement;
+
+            draggedElement.remove();
+            targetPiece.remove();
+
+            draggedSlot.appendChild(targetPiece);
+            targetOriginalParent.appendChild(draggedElement);
+
+            draggedElement = null;
+        } else if (draggedElement && !targetPiece) {
+            const draggedSlot = draggedElement.parentElement;
+            if (draggedSlot !== targetSlot) {
+                draggedElement.remove();
+                targetSlot.appendChild(draggedElement);
+            }
+            draggedElement = null;
+        }
+    });
+});
+
+// Обработчик кнопки проверки капчи
+document.getElementById('check-captcha-btn').addEventListener('click', function() {
+    // Получаем текущий порядок в слотах
+    const currentOrder = [];
+    document.querySelectorAll('.captcha-slot').forEach(slot => {
+        const piece = slot.querySelector('.captcha-piece');
+        if (piece) {
+            currentOrder.push(parseInt(piece.dataset.original));
+        } else {
+            currentOrder.push(null);
+        }
+    });
+
+    const correctOrder = [1, 2, 3, 4];
+    let isCorrect = true;
+    for (let i = 0; i < 4; i++) {
+        if (currentOrder[i] !== correctOrder[i]) {
+            isCorrect = false;
+            break;
+        }
+    }
+
+    if (isCorrect) {
+        // Капча пройдена!
+        // Отправляем форму с капчей на сервер
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.style.display = 'none';
+
+        const inputCaptchaOrder = document.createElement('input');
+        inputCaptchaOrder.type = 'hidden';
+        inputCaptchaOrder.name = 'captcha_order';
+        inputCaptchaOrder.value = currentOrder.join(',');
+        form.appendChild(inputCaptchaOrder);
+
+        const inputCaptchaPassed = document.createElement('input');
+        inputCaptchaPassed.type = 'hidden';
+        inputCaptchaPassed.name = 'captcha_passed';
+        inputCaptchaPassed.value = 'true';
+        form.appendChild(inputCaptchaPassed);
+
+        document.body.appendChild(form);
+        form.submit();
+    } else {
+        alert('Неправильный порядок! Попробуйте снова.');
+    }
+});
+</script>

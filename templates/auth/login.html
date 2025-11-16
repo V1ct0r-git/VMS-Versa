@@ -1,0 +1,20 @@
+{% extends "auth_base.html" %} <!-- auth_base.html в корне templates -->
+
+{% block title %}Вход в систему{% endblock %}
+
+{% block auth_content %}
+    <!-- Включаем шаблон капчи, если она не пройдена -->
+    {% if not captcha_passed %}
+        {% include 'auth/captcha.html' %} <!-- Путь от templates -->
+    {% endif %}
+
+    <!-- Всегда включаем шаблон формы логина -->
+    {% include 'auth/login_form.html' %} <!-- Путь от templates -->
+
+    <!-- Передаем переменные в включенные шаблоны -->
+    <!-- Они доступны автоматически -->
+{% endblock %}
+
+<!-- Скрипты для капчи и формы логина уже находятся в их собственных шаблонах -->
+<!-- Поэтому здесь не нужно ничего добавлять -->
+{% block auth_scripts %}{% endblock %}

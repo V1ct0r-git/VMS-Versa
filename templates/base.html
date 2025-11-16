@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Верса{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <!-- Навигационная панель -->
+    <nav class="navbar">
+        <div class="nav-title">
+            <i class="fas fa-truck"></i>
+            <span>Верса</span>
+        </div>
+
+        <div class="nav-links">
+            {% if current_user.role in ['admin', 'manager', 'mechanic'] %}
+            <a href="/dashboard" class="nav-link {{ 'active' if request.path == '/dashboard' else '' }}">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Дашборд</span>
+            </a>
+            {% endif %}
+
+            {% if current_user.role in ['admin', 'manager', 'mechanic'] %}
+            <a href="/vehicles" class="nav-link {{ 'active' if request.path == '/vehicles' else '' }}">
+                <i class="fas fa-car"></i>
+                <span>Транспорт</span>
+            </a>
+            {% endif %}
+
+            {% if current_user.role in ['admin', 'mechanic'] %}
+            <a href="/maintenance" class="nav-link {{ 'active' if request.path == '/maintenance' else '' }}">
+                <i class="fas fa-wrench"></i>
+                <span>ТО</span>
+            </a>
+            <a href="/repairs" class="nav-link {{ 'active' if request.path == '/repairs' else '' }}">
+                <i class="fas fa-tools"></i>
+                <span>Ремонты</span>
+            </a>
+            <a href="/reminders" class="nav-link {{ 'active' if request.path == '/reminders' else '' }}">
+                <i class="fas fa-bell"></i>
+                <span>Напоминания</span>
+            </a>
+            {% endif %}
+
+            {% if current_user.role in ['admin', 'manager'] %}
+            <a href="/mechanics" class="nav-link {{ 'active' if request.path == '/mechanics' else '' }}">
+                <i class="fas fa-tools"></i>
+                <span>Механики</span>
+            </a>
+            <a href="/reports" class="nav-link {{ 'active' if request.path == '/reports' else '' }}">
+                <i class="fas fa-chart-bar"></i>
+                <span>Отчеты</span>
+            </a>
+            {% endif %}
+
+            {% if current_user.role == 'admin' %}
+            <a href="/admin" class="nav-link {{ 'active' if request.path == '/admin' else '' }}">
+                <i class="fas fa-user-shield"></i>
+                <span>Администрирование</span>
+            </a>
+            {% endif %}
+        </div>
+
+        <div class="user-info">
+            {% if current_user.is_authenticated %}
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-details">
+                    <span class="username">{{ current_user.fullName }}</span>
+                    <span class="user-role">{{ current_user.role }}</span>
+                </div>
+                <div class="user-dropdown">
+                    <a href="{{ url_for('settings') }}" class="dropdown-item">
+                        <i class="fas fa-cog"></i>
+                        Настройки
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Выйти
+                    </a>
+                </div>
+            </div>
+            {% else %}
+            <a href="{{ url_for('login') }}" class="btn btn-primary">
+                <i class="fas fa-sign-in-alt"></i>
+                Войти
+            </a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Flash-сообщения (включая SQL-ошибки) -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages-container">
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        <span>{{ message }}</span>
+                        <button type="button" class="flash-close-btn" onclick="this.parentElement.remove()">&times;</button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Основное содержимое -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Футер -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-info">
+                <div class="footer-logo">
+                    <i class="fas fa-truck"></i>
+                    <span>Верса</span>
+                </div>
+                <p>Система управления автотранспортом v{{ system_info.system.version }}</p>
+            </div>
+            <div class="footer-links">
+                <a href="/about">О системе</a>
+                <a href="/help">Помощь</a>
+                <a href="/contact">Контакты</a>
+                <a href="/system-info">Информация о системе</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 {{ system_info.system.company }}. Все права защищены. v{{ system_info.system.version }}</p>
+        </div>
+    </footer>
+
+    <!-- Стили для flash-сообщений -->
+    <style>
+        .flash-messages-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            width: 350px;
+            max-width: calc(100% - 40px);
+        }
+
+        .flash-message {
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .flash-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .flash-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .flash-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .flash-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .flash-close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: inherit;
+            padding: 0;
+            margin-left: 10px;
+            line-height: 1;
+        }
+
+        .flash-close-btn:hover {
+            opacity: 0.7;
+        }
+    </style>
+
+    <!-- Скрипты -->
+    <script>
+        // Анимация наведения для пользовательского меню
+        document.addEventListener('DOMContentLoaded', function() {
+            const userProfile = document.querySelector('.user-profile');
+            if (userProfile) {
+                userProfile.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                });
+            }
+
+            // Закрытие dropdown при клике вне его
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.user-profile')) {
+                    const activeDropdown = document.querySelector('.user-profile.active');
+                    if (activeDropdown) {
+                        activeDropdown.classList.remove('active');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

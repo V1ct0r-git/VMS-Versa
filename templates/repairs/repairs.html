@@ -1,0 +1,437 @@
+{% extends "base.html" %}
+
+{% block title %}Ремонты - {{ system_info.system.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Заголовок и кнопка добавления -->
+    <div class="page-header">
+        <div class="page-title-section">
+            <h1 class="card-title"><i class="fas fa-tools"></i> Ремонты</h1>
+            <p class="page-subtitle">Управление и отслеживание ремонтных работ</p>
+        </div>
+        <div class="page-actions">
+            <a href="{{ url_for('add_repair') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i>
+                Добавить ремонт
+            </a>
+        </div>
+    </div>
+
+    <!-- Статистика -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-file-alt"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ stats.total }}</div>
+                <div class="stat-label">Всего ремонтов</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ stats.planned }}</div>
+                <div class="stat-label">Запланировано</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-cogs"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ stats.in_progress }}</div>
+                <div class="stat-label">В процессе</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ stats.completed }}</div>
+                <div class="stat-label">Завершено</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-ruble-sign"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ "{:,.2f}".format(stats.total_cost) }} ₽</div>
+                <div class="stat-label">Общая стоимость</div>
+            </div>
+        </div>
+    </div>
+
+    {% if filtered_vehicle %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i>
+        Отображаются ремонты только для автомобиля: 
+        <strong>{{ filtered_vehicle.brand }} {{ filtered_vehicle.model }} ({{ filtered_vehicle.licensePlate }})</strong>
+        <a href="{{ url_for('repairs') }}" class="btn btn-sm btn-outline" style="margin-left: 1rem;">
+            <i class="fas fa-eye"></i> Показать все
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Фильтры -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-filter"></i> Фильтры</h3>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="filter-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Автомобиль</label>
+                        <select name="car_id" class="form-control">
+                            <option value="">Все автомобили</option>
+                            {% for car in vehicles %}
+                            <option value="{{ car.CarID }}" {% if car_id == car.CarID|string %}selected{% endif %}>
+                                {{ car.brand }} {{ car.model }} ({{ car.licensePlate }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Тип ремонта</label>
+                        <select name="type" class="form-control">
+                            <option value="">Все типы</option>
+                            {% for type in repair_types %}
+                            <option value="{{ type }}" {% if type_filter == type %}selected{% endif %}>
+                                {{ {
+                                    'engine': 'Двигатель',
+                                    'transmission': 'Трансмиссия',
+                                    'brakes': 'Тормоза',
+                                    'electrical': 'Электрика',
+                                    'body': 'Кузов',
+                                    'other': 'Другое'
+                                }[type] }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Статус</label>
+                        <select name="status" class="form-control">
+                            <option value="">Все статусы</option>
+                            <option value="planned" {% if status == 'planned' %}selected{% endif %}>Запланировано</option>
+                            <option value="in_progress" {% if status == 'in_progress' %}selected{% endif %}>В процессе</option>
+                            <option value="completed" {% if status == 'completed' %}selected{% endif %}>Завершено</option>
+                            <option value="cancelled" {% if status == 'cancelled' %}selected{% endif %}>Отменено</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Дата от</label>
+                        <input type="date" name="date_from" class="form-control" 
+                               value="{{ date_from or '' }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Дата до</label>
+                        <input type="date" name="date_to" class="form-control" 
+                               value="{{ date_to or '' }}">
+                    </div>
+                </div>
+
+                <div class="filter-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-filter"></i>
+                        Применить фильтры
+                    </button>
+                    <a href="{{ url_for('repairs') }}" class="btn btn-outline">
+                        <i class="fas fa-times"></i>
+                        Сбросить фильтры
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Таблица ремонтов -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-list"></i> Записи ремонтов</h3>
+            <div class="table-info">
+                Показано {{ repairs.items|length }} из {{ total }} записей
+            </div>
+        </div>
+        <div class="card-body">
+            {% if repairs.items %}
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>
+                                <a href="?{% for key, value in request.args.items() if key not in ['sort_by', 'sort_order', 'page'] %}{{ key }}={{ value }}&{% endfor %}sort_by=date&sort_order={% if sort_by == 'date' and sort_order == 'asc' %}desc{% else %}asc{% endif %}"
+                                class="sort-link">
+                                    Дата
+                                    {% if sort_by == 'date' %}
+                                        <i class="fas fa-sort-{% if sort_order == 'asc' %}up{% else %}down{% endif %}"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th>Автомобиль</th>
+                            <th>
+                                <a href="?{% for key, value in request.args.items() if key not in ['sort_by', 'sort_order', 'page'] %}{{ key }}={{ value }}&{% endfor %}sort_by=repairType&sort_order={% if sort_by == 'repairType' and sort_order == 'asc' %}desc{% else %}asc{% endif %}"
+                                class="sort-link">
+                                    Тип ремонта
+                                    {% if sort_by == 'repairType' %}
+                                        <i class="fas fa-sort-{% if sort_order == 'asc' %}up{% else %}down{% endif %}"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="?{% for key, value in request.args.items() if key not in ['sort_by', 'sort_order', 'page'] %}{{ key }}={{ value }}&{% endfor %}sort_by=priority&sort_order={% if sort_by == 'priority' and sort_order == 'asc' %}desc{% else %}asc{% endif %}"
+                                class="sort-link">
+                                    Приоритет
+                                    {% if sort_by == 'priority' %}
+                                        <i class="fas fa-sort-{% if sort_order == 'asc' %}up{% else %}down{% endif %}"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="?{% for key, value in request.args.items() if key not in ['sort_by', 'sort_order', 'page'] %}{{ key }}={{ value }}&{% endfor %}sort_by=status&sort_order={% if sort_by == 'status' and sort_order == 'asc' %}desc{% else %}asc{% endif %}"
+                                class="sort-link">
+                                    Статус
+                                    {% if sort_by == 'status' %}
+                                        <i class="fas fa-sort-{% if sort_order == 'asc' %}up{% else %}down{% endif %}"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="?{% for key, value in request.args.items() if key not in ['sort_by', 'sort_order', 'page'] %}{{ key }}={{ value }}&{% endfor %}sort_by=cost&sort_order={% if sort_by == 'cost' and sort_order == 'asc' %}desc{% else %}asc{% endif %}"
+                                class="sort-link">
+                                    Стоимость
+                                    {% if sort_by == 'cost' %}
+                                        <i class="fas fa-sort-{% if sort_order == 'asc' %}up{% else %}down{% endif %}"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for repair in repairs.items %}
+                        <tr>
+                            <td data-label="Дата">
+                                {% if repair.date %}
+                                    {{ repair.date.strftime('%d.%m.%Y') }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td data-label="Автомобиль">
+                                <div class="vehicle-info">
+                                    <strong>{{ repair.car.brand }} {{ repair.car.model }}</strong>
+                                    <small class="text-muted">{{ repair.car.licensePlate }}</small>
+                                </div>
+                            </td>
+                            <td data-label="Тип">
+                                <span class="badge badge-warning">
+                                    {{ {
+                                        'engine': 'Двигатель',
+                                        'transmission': 'Трансмиссия',
+                                        'brakes': 'Тормоза',
+                                        'electrical': 'Электрика',
+                                        'body': 'Кузов',
+                                        'other': 'Другое'
+                                    }[repair.repairType] }}
+                                </span>
+                            </td>
+                            <td data-label="Приоритет">
+                                <span class="priority-badge priority-{{ repair.priority }}">
+                                    {{ {
+                                        'low': 'Низкий',
+                                        'medium': 'Средний',
+                                        'high': 'Высокий',
+                                        'critical': 'Критический'
+                                    }[repair.priority] }}
+                                </span>
+                            </td>
+                            <td data-label="Статус">
+                                <span class="badge 
+                                    {{ 'badge-secondary' if repair.status == 'planned' else 
+                                       'badge-info' if repair.status == 'in_progress' else 
+                                       'badge-success' if repair.status == 'completed' else 
+                                       'badge-danger' }}">
+                                    {{ {
+                                        'planned': 'Запланировано',
+                                        'in_progress': 'В процессе',
+                                        'completed': 'Завершено',
+                                        'cancelled': 'Отменено'
+                                    }[repair.status] }}
+                                </span>
+                            </td>
+                            <td data-label="Стоимость" class="cost-cell">
+                                {{ "{:,.2f}".format(repair.cost or 0) }} ₽
+                            </td>
+                            <td data-label="Действия" class="table-actions">
+                                <a href="{{ url_for('view_repair', repair_id=repair.repairID) }}" 
+                                   class="btn btn-sm btn-outline" title="Просмотреть">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ url_for('edit_repair', repair_id=repair.repairID) }}" 
+                                   class="btn btn-sm btn-outline" title="Редактировать">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Пагинация -->
+            {% if total > per_page %}
+            <div class="pagination-container">
+                <div class="pagination-info">
+                    Страница {{ page }} из {{ total_pages }}
+                </div>
+                <div class="pagination">
+                    {% set base_params = {} %}
+                    {% for key, value in request.args.items() %}
+                        {% if key not in ['page', 'sort_by', 'sort_order'] %}
+                            {% set _ = base_params.update({key: value}) %}
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if repairs.has_prev %}
+                        <a href="?{% for key, value in base_params.items() %}{{ key }}={{ value }}&{% endfor %}sort_by={{ sort_by }}&sort_order={{ sort_order }}&page={{ page - 1 }}" 
+                           class="page-link">&laquo;</a>
+                    {% endif %}
+                    
+                    {% for p in range(1, total_pages + 1) %}
+                        {% if p >= page - 2 and p <= page + 2 %}
+                            <a href="?{% for key, value in base_params.items() %}{{ key }}={{ value }}&{% endfor %}sort_by={{ sort_by }}&sort_order={{ sort_order }}&page={{ p }}" 
+                               class="page-link {{ 'active' if p == page else '' }}">{{ p }}</a>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if repairs.has_next %}
+                        <a href="?{% for key, value in base_params.items() %}{{ key }}={{ value }}&{% endfor %}sort_by={{ sort_by }}&sort_order={{ sort_order }}&page={{ page + 1 }}" 
+                           class="page-link">&raquo;</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            {% else %}
+            <div class="no-data">
+                <i class="fas fa-tools"></i>
+                <h3>Нет ремонтных работ</h3>
+                <p>Создайте первую запись ремонта</p>
+                <a href="{{ url_for('add_repair') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Добавить ремонт
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.vehicle-info strong {
+    display: block;
+}
+
+.vehicle-info small {
+    display: block;
+    font-size: 0.8rem;
+}
+
+.cost-cell {
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.priority-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.priority-high {
+    background: var(--warning);
+    color: #212529;
+}
+
+.priority-medium {
+    background: #fd7e14;
+    color: var(--white);
+}
+
+.priority-low {
+    background: var(--success);
+    color: var(--white);
+}
+
+.priority-critical {
+    background: var(--danger);
+    color: var(--white);
+}
+
+.sort-link {
+    color: var(--text);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.sort-link:hover {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.sort-link i {
+    font-size: 0.8rem;
+    opacity: 0.5;
+}
+
+.sort-link:hover i {
+    opacity: 1;
+}
+
+.table-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.table-actions .btn {
+    padding: 0.25rem 0.5rem;
+    min-width: auto;
+}
+
+@media screen and (max-width: 768px) {
+    .vehicle-info {
+        text-align: center;
+    }
+    
+    .table-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .data-table th a {
+        flex-direction: column;
+        gap: 0.1rem;
+    }
+    
+    .data-table th a i {
+        margin: 0;
+    }
+}
+</style>
+{% endblock %}

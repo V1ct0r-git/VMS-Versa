@@ -1,0 +1,462 @@
+{% extends "base.html" %}
+
+{% block title %}Просмотр ТО №{{ maintenance.maintenanceID }} - {{ system_info.system.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Заголовок страницы -->
+    <div class="page-header">
+        <div class="page-title-section">
+            <h1 class="card-title">
+                <i class="fas fa-wrench"></i> 
+                ТО №{{ maintenance.maintenanceID }}
+            </h1>
+            <div class="page-subtitle">
+                Запись технического обслуживания от {{ maintenance.startDate.strftime('%d.%m.%Y') if maintenance.startDate else '—' }}
+            </div>
+        </div>
+        <div class="page-actions">
+            <a href="{{ url_for('edit_maintenance', record_id=maintenance.maintenanceID) }}" 
+               class="btn btn-primary">
+                <i class="fas fa-edit"></i>
+                Редактировать
+            </a>
+            <a href="{{ url_for('maintenance_records') }}" 
+               class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i>
+                Назад к списку
+            </a>
+        </div>
+    </div>
+
+    <!-- Статус и приоритет -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-flag"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">
+                    <span class="priority-badge priority-{{ maintenance.priority }}">
+                        {{ {
+                            'low': 'Низкий',
+                            'medium': 'Средний', 
+                            'high': 'Высокий',
+                            'critical': 'Критический'
+                        }[maintenance.priority] }}
+                    </span>
+                </div>
+                <div class="stat-label">Приоритет</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-clipboard-check"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">
+                    <span class="badge 
+                        {{ 'badge-secondary' if maintenance.status == 'planned' else 
+                           'badge-info' if maintenance.status == 'in_progress' else 
+                           'badge-success' if maintenance.status == 'completed' else 
+                           'badge-danger' if maintenance.status == 'cancelled' else 
+                           'badge-warning' if maintenance.status == 'on_hold' else 
+                           'badge-dark' }}">
+                        {{ {
+                            'planned': 'Запланировано',
+                            'in_progress': 'В процессе',
+                            'completed': 'Завершено',
+                            'cancelled': 'Отменено',
+                            'on_hold': 'Приостановлено'
+                        }[maintenance.status] }}
+                    </span>
+                </div>
+                <div class="stat-label">Статус</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-ruble-sign"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ "{:,.2f}".format(maintenance.totalCost or 0) }} ₽</div>
+                <div class="stat-label">Общая стоимость</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Информация об автомобиле -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-car"></i> 
+                Информация об автомобиле
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Марка</label>
+                    <div class="form-value">
+                        <strong>{{ maintenance.car.brand }}</strong>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Модель</label>
+                    <div class="form-value">
+                        <strong>{{ maintenance.car.model }}</strong>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">ГОСНомер</label>
+                    <div class="form-value">
+                        <span class="license-plate">{{ maintenance.car.licensePlate }}</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Цвет</label>
+                    <div class="form-value">
+                        {% set color_class = {
+                            'Красный': 'color-red',
+                            'Синий': 'color-blue',
+                            'Зелёный': 'color-green',
+                            'Жёлтый': 'color-yellow',
+                            'Белый': 'color-white',
+                            'Чёрный': 'color-black',
+                            'Серый': 'color-gray'
+                        } %}
+        
+                        {% set car_color = maintenance.car.color or '—' %}
+                        {% set color_css_class = color_class.get(car_color, 'color-default') %}
+        
+                        <span class="color-swatch {{ color_css_class }}"></span>
+                        {{ car_color }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Пробег</label>
+                    <div class="form-value">
+                        {{ "{:,}".format(maintenance.car.mileage) if maintenance.car.mileage else 0 }} км
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Год выпуска</label>
+                    <div class="form-value">{{ maintenance.car.year }}</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">VIN</label>
+                    <div class="form-value">{{ maintenance.car.vin or '—' }}</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Номер двигателя</label>
+                    <div class="form-value">{{ maintenance.car.engineNumber or '—' }}</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Статус автомобиля</label>
+                    <div class="form-value">
+                        <span class="badge 
+                            {{ 'badge-success' if maintenance.car.status == 'Active' else 
+                               'badge-warning' if maintenance.car.status == 'Maintenance' else 
+                               'badge-secondary' if maintenance.car.status == 'Inactive' else 
+                               'badge-danger' }}">
+                            {{ 'Активный' if maintenance.car.status == 'Active' else 
+                               'На ТО' if maintenance.car.status == 'Maintenance' else 
+                               'Неактивный' if maintenance.car.status == 'Inactive' else 
+                               'Выбыл' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Информация о ТО -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-tools"></i> 
+                Детали технического обслуживания
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Тип ТО</label>
+                    <div class="form-value">
+                        <span class="badge badge-info">{{ maintenance.maintenance_type.name }}</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Приоритет</label>
+                    <div class="form-value">
+                        <span class="priority-badge priority-{{ maintenance.priority }}">
+                            {{ {
+                                'low': 'Низкий',
+                                'medium': 'Средний',
+                                'high': 'Высокий', 
+                                'critical': 'Критический'
+                            }[maintenance.priority] }}
+                        </span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Статус</label>
+                    <div class="form-value">
+                        <span class="badge 
+                            {{ 'badge-secondary' if maintenance.status == 'planned' else 
+                               'badge-info' if maintenance.status == 'in_progress' else 
+                               'badge-success' if maintenance.status == 'completed' else 
+                               'badge-danger' if maintenance.status == 'cancelled' else 
+                               'badge-warning' if maintenance.status == 'on_hold' else 
+                               'badge-dark' }}">
+                            {{ {
+                                'planned': 'Запланировано',
+                                'in_progress': 'В процессе',
+                                'completed': 'Завершено',
+                                'cancelled': 'Отменено',
+                                'on_hold': 'Приостановлено'
+                            }[maintenance.status] }}
+                        </span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Дата начала</label>
+                    <div class="form-value">
+                        {{ maintenance.startDate.strftime('%d.%m.%Y') if maintenance.startDate else '—' }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Дата завершения</label>
+                    <div class="form-value">
+                        {{ maintenance.completeDate.strftime('%d.%m.%Y') if maintenance.completeDate else '—' }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Пробег при ТО</label>
+                    <div class="form-value">
+                        {{ "{:,}".format(maintenance.mileageAtService) if maintenance.mileageAtService else 0 }} км
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Стоимость запчастей</label>
+                    <div class="form-value cost-value">
+                        {{ "{:,.2f}".format(maintenance.partsCost or 0) }} ₽
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Стоимость работ</label>
+                    <div class="form-value cost-value">
+                        {{ "{:,.2f}".format(maintenance.laborCost or 0) }} ₽
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Общая стоимость</label>
+                    <div class="form-value cost-value">
+                        <strong>{{ "{:,.2f}".format(maintenance.totalCost or 0) }} ₽</strong>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Механик</label>
+                    <div class="form-value">
+                        <i class="fas fa-user"></i> {{ maintenance.user.fullName }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Дата следующего ТО</label>
+                    <div class="form-value">
+                        {{ maintenance.nextServiceDate.strftime('%d.%m.%Y') if maintenance.nextServiceDate else '—' }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Пробег следующего ТО</label>
+                    <div class="form-value">
+                        {{ "{:,}".format(maintenance.nextServiceMileage) if maintenance.nextServiceMileage else 0 }} км
+                    </div>
+                </div>
+            </div>
+            
+            {% if maintenance.description %}
+            <div class="form-group full-width">
+                <label class="form-label">Описание работ</label>
+                <div class="form-value">
+                    <div class="description-text">{{ maintenance.description|replace('\n', '<br>')|safe }}</div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Связанные данные -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-link"></i> 
+                Связанные данные
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="related-data">
+                <div class="related-item">
+                    <h4><i class="fas fa-car"></i> Другие ТО для этого автомобиля</h4>
+                    <div class="related-actions">
+                        <a href="{{ url_for('maintenance_records') }}?car_id={{ maintenance.car.CarID }}" 
+                           class="btn btn-sm btn-outline">
+                            Просмотреть все ТО
+                        </a>
+                        <a href="{{ url_for('vehicle_detail', car_id=maintenance.car.CarID) }}" 
+                           class="btn btn-sm btn-outline">
+                            Профиль автомобиля
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="related-item">
+                    <h4><i class="fas fa-user"></i> Другие работы этого механика</h4>
+                    <div class="related-actions">
+                        <a href="{{ url_for('maintenance_records') }}?user_id={{ maintenance.user.userID }}" 
+                           class="btn btn-sm btn-outline">
+                            Просмотреть все работы
+                        </a>
+                        <a href="{{ url_for('view_mechanic', mechanic_id=maintenance.user.userID) }}" 
+                           class="btn btn-sm btn-outline">
+                            Профиль механика
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.license-plate {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    background: var(--primary);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    display: inline-block;
+}
+
+.color-swatch {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+}
+
+.cost-value {
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.priority-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.priority-low {
+    background: var(--success);
+    color: var(--white);
+}
+
+.priority-medium {
+    background: #fd7e14;
+    color: var(--white);
+}
+
+.priority-high {
+    background: var(--warning);
+    color: #212529;
+}
+
+.priority-critical {
+    background: var(--danger);
+    color: var(--white);
+}
+
+.description-text {
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+
+.related-data {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.related-item {
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+}
+
+.related-item h4 {
+    margin: 0 0 1rem 0;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.related-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.related-actions .btn {
+    margin-bottom: 0.25rem;
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}
+
+.page-subtitle {
+    color: var(--text-light);
+    font-size: 1rem;
+    margin: 0.25rem 0 0 0;
+}
+
+.stat-content .stat-value {
+    font-size: 1.1rem;
+}
+
+@media screen and (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .page-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+    
+    .stats-container {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .related-actions {
+        flex-direction: column;
+    }
+    
+    .related-actions .btn {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}

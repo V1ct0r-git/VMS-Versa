@@ -1,0 +1,59 @@
+
+{% extends "base.html" %}
+
+{% block title %}{{ page_title or 'Отчеты - Верса' }}{% endblock %}
+
+
+{% block head %}
+    {{ super() }} <!-- Наследуем базовые стили из reports_base.html -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/reports.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1 class="card-title">{{ page_title or 'Отчеты' }}</h1>
+        <p class="text-muted">Аналитика и статистика по автопарку и техническому обслуживанию</p>
+    </div>
+
+    <div class="settings-grid"> <!-- Используем тот же класс, что и в настройках -->
+        <!-- Боковая панель (меню отчётов) -->
+        <div class="settings-sidebar">
+            <div class="settings-menu">
+                <a href="{{ url_for('reports') }}" class="settings-menu-item {% if active_report == 'dashboard' %}active{% endif %}">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Статистика</span>
+                </a>
+                <a href="{{ url_for('report_car_history') }}" class="settings-menu-item {% if active_report == 'car_history' %}active{% endif %}">
+                    <i class="fas fa-car"></i>
+                    <span>История работ по автомобилю</span>
+                </a>
+                <a href="{{ url_for('report_mechanic_performance') }}" class="settings-menu-item {% if active_report == 'mechanic_performance' %}active{% endif %}">
+                    <i class="fas fa-wrench"></i>
+                    <span>Производительность механиков</span>
+                </a>
+                <a href="{{ url_for('report_maintenance_log') }}" class="settings-menu-item {% if active_report == 'maintenance_log' %}active{% endif %}">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>Журнал работ</span>
+                </a>
+                <a href="{{ url_for('report_costs_by_period') }}" class="settings-menu-item {% if active_report == 'costs_by_period' %}active{% endif %}">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span>Затраты за период</span>
+                </a>
+                <a href="{{ url_for('report_fleet_summary') }}" class="settings-menu-item {% if active_report == 'fleet_summary' %}active{% endif %}">
+                    <i class="fas fa-truck"></i>
+                    <span>Сводка по автопарку</span>
+                </a>
+                <!-- Добавь другие отчёты по мере реализации -->
+            </div>
+        </div>
+
+        <!-- Контентная область -->
+        <div class="settings-content">
+            {% block reports_content %}{% endblock %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

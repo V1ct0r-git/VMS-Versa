@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+
+{% block title %}Просмотр ремонта №{{ repair.repairID }} - {{ system_info.system.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Заголовок страницы -->
+    <div class="page-header">
+        <div class="page-title-section">
+            <h1 class="card-title">
+                <i class="fas fa-tools"></i> 
+                Ремонт №{{ repair.repairID }}
+            </h1>
+            <div class="page-subtitle">
+                Запись ремонта от {{ repair.date.strftime('%d.%m.%Y') if repair.date else '—' }}
+            </div>
+        </div>
+        <div class="page-actions">
+            <a href="{{ url_for('edit_repair', repair_id=repair.repairID) }}" 
+               class="btn btn-primary">
+                <i class="fas fa-edit"></i>
+                Редактировать
+            </a>
+            <a href="{{ url_for('repairs') }}" 
+               class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i>
+                Назад к списку
+            </a>
+        </div>
+    </div>
+
+    <!-- Статус и приоритет -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-flag"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">
+                    <span class="priority-badge priority-{{ repair.priority }}">
+                        {{ {
+                            'low': 'Низкий',
+                            'medium': 'Средний', 
+                            'high': 'Высокий',
+                            'critical': 'Критический'
+                        }[repair.priority] }}
+                    </span>
+                </div>
+                <div class="stat-label">Приоритет</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-clipboard-check"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">
+                    <span class="badge 
+                        {{ 'badge-secondary' if repair.status == 'planned' else 
+                           'badge-info' if repair.status == 'in_progress' else 
+                           'badge-success' if repair.status == 'completed' else 
+                           'badge-danger' }}">
+                        {{ {
+                            'planned': 'Запланировано',
+                            'in_progress': 'В процессе',
+                            'completed': 'Завершено',
+                            'cancelled': 'Отменено'
+                        }[repair.status] }}
+                    </span>
+                </div>
+                <div class="stat-label">Статус</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-ruble-sign"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ "{:,.2f}".format(repair.cost or 0) }} ₽</div>
+                <div class="stat-label">Стоимость</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Информация об автомобиле -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-car"></i> 
+                Информация об автомобиле
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Марка</label>
+                    <div class="form-value">
+                        <strong>{{ repair.car.brand }}</strong>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Модель</label>
+                    <div class="form-value">
+                        <strong>{{ repair.car.model }}</strong>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">ГОСНомер</label>
+                    <div class="form-value">
+                        <span class="license-plate">{{ repair.car.licensePlate }}</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Цвет</label>
+                    <div class="form-value">
+                        <span class="color-swatch" style="background-color: {{ repair.car.color or '#ccc' }};"></span>
+                        {{ repair.car.color or '—' }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Пробег</label>
+                    <div class="form-value">
+                        {{ "{:,}".format(repair.car.mileage) if repair.car.mileage else 0 }} км
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Год выпуска</label>
+                    <div class="form-value">{{ repair.car.year }}</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">VIN</label>
+                    <div class="form-value">{{ repair.car.vin or '—' }}</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Номер двигателя</label>
+                    <div class="form-value">{{ repair.car.engineNumber or '—' }}</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Статус автомобиля</label>
+                    <div class="form-value">
+                        <span class="badge 
+                            {{ 'badge-success' if repair.car.status == 'Active' else 
+                               'badge-warning' if repair.car.status == 'Maintenance' else 
+                               'badge-secondary' if repair.car.status == 'Inactive' else 
+                               'badge-danger' }}">
+                            {{ 'Активный' if repair.car.status == 'Active' else 
+                               'На ТО' if repair.car.status == 'Maintenance' else 
+                               'Неактивный' if repair.car.status == 'Inactive' else 
+                               'Выбыл' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Информация о ремонте -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-tools"></i> 
+                Детали ремонта
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Тип ремонта</label>
+                    <div class="form-value">
+                        <span class="badge badge-warning">
+                            {{ {
+                                'engine': 'Двигатель',
+                                'transmission': 'Трансмиссия',
+                                'brakes': 'Тормоза',
+                                'electrical': 'Электрика',
+                                'body': 'Кузов',
+                                'other': 'Другое'
+                            }[repair.repairType] }}
+                        </span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Приоритет</label>
+                    <div class="form-value">
+                        <span class="priority-badge priority-{{ repair.priority }}">
+                            {{ {
+                                'low': 'Низкий',
+                                'medium': 'Средний',
+                                'high': 'Высокий', 
+                                'critical': 'Критический'
+                            }[repair.priority] }}
+                        </span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Статус</label>
+                    <div class="form-value">
+                        <span class="badge 
+                            {{ 'badge-secondary' if repair.status == 'planned' else 
+                               'badge-info' if repair.status == 'in_progress' else 
+                               'badge-success' if repair.status == 'completed' else 
+                               'badge-danger' }}">
+                            {{ {
+                                'planned': 'Запланировано',
+                                'in_progress': 'В процессе',
+                                'completed': 'Завершено',
+                                'cancelled': 'Отменено'
+                            }[repair.status] }}
+                        </span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Дата ремонта</label>
+                    <div class="form-value">
+                        {{ repair.date.strftime('%d.%m.%Y') if repair.date else '—' }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Срок гарантии</label>
+                    <div class="form-value">
+                        {{ repair.warrantyExpiry.strftime('%d.%m.%Y') if repair.warrantyExpiry else '—' }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Причина</label>
+                    <div class="form-value">
+                        {{ repair.reason or '—' }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Описание работ</label>
+                    <div class="form-value">
+                        <div class="description-text">{{ repair.description|replace('\n', '<br>')|safe }}</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Стоимость</label>
+                    <div class="form-value cost-value">
+                        <strong>{{ "{:,.2f}".format(repair.cost or 0) }} ₽</strong>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Название услуги</label>
+                    <div class="form-value">
+                        {{ repair.serviceName or '—' }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Связанные данные -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-link"></i> 
+                Связанные данные
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="related-data">
+                <div class="related-item">
+                    <h4><i class="fas fa-car"></i> Другие ремонты для этого автомобиля</h4>
+                    <div class="related-actions">
+                        <a href="{{ url_for('repairs') }}?car_id={{ repair.car.CarID }}" 
+                           class="btn btn-sm btn-outline">
+                            Просмотреть все ремонты
+                        </a>
+                        <a href="{{ url_for('vehicle_detail', car_id=repair.car.CarID) }}" 
+                           class="btn btn-sm btn-outline">
+                            Профиль автомобиля
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Стили остаются те же, что и в предыдущей версии */
+</style>
+{% endblock %}
