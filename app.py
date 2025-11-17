@@ -969,7 +969,7 @@ def maintenance_records():
     car_id = request.args.get('car_id')
     type_filter = request.args.get('type')
     user_id = request.args.get('user_id')
-    status_filter = request.args.get('status')  # ← Новый параметр
+    status_filter = request.args.get('status')
     date_from = request.args.get('date_from')
     date_to = request.args.get('date_to')
     sort_by = request.args.get('sort_by', 'startDate')
@@ -989,6 +989,10 @@ def maintenance_records():
         db.joinedload(Maintenance.user)
     )
 
+    # Если пользователь - механик, фильтруем по его ID
+    if current_user.role == 'mechanic':
+        query = query.filter(Maintenance.userID == current_user.userID)
+
     # Фильтрация
     if car_id:
         query = query.filter(Maintenance.carID == int(car_id))
@@ -996,10 +1000,11 @@ def maintenance_records():
     if type_filter:
         query = query.join(MaintenanceType).filter(MaintenanceType.name == type_filter)
 
-    if user_id:
+    # Если пользователь не механик, учитываем фильтр по пользователю
+    if user_id and current_user.role != 'mechanic':
         query = query.filter(Maintenance.userID == int(user_id))
 
-    if status_filter:  # ← Новый фильтр
+    if status_filter:
         query = query.filter(Maintenance.status == status_filter)
 
     if date_from:
@@ -1024,27 +1029,40 @@ def maintenance_records():
 
     # Данные для фильтров
     vehicles = Car.query.order_by(Car.brand, Car.model).all()
-    mechanics = User.query.filter_by(role='mechanic').order_by(User.fullName).all()
+    
+    # Если пользователь - механик, показываем только его
+    if current_user.role == 'mechanic':
+        mechanics = [current_user]
+    else:
+        mechanics = User.query.filter_by(role='mechanic').order_by(User.fullName).all()
+    
     types = MaintenanceType.query.order_by(MaintenanceType.name).all()
 
     # Информация об отфильтрованных элементах
     filtered_vehicle = Car.query.filter_by(CarID=int(car_id)).first() if car_id else None
-    filtered_mechanic = User.query.filter_by(userID=int(user_id)).first() if user_id else None
-    # Добавляем отфильтрованный статус
-    filtered_status = status_filter
+    
+    # Если пользователь - механик, он видит только свои работы, не показываем сообщение о фильтрации по механику
+    if current_user.role == 'mechanic':
+        filtered_mechanic = current_user
+    else:
+        filtered_mechanic = User.query.filter_by(userID=int(user_id)).first() if user_id else None
 
     # Статистика
     stats_query = Maintenance.query.options(
         db.joinedload(Maintenance.maintenance_type)
     )
 
+    # Применяем фильтр по механику для статистики
+    if current_user.role == 'mechanic':
+        stats_query = stats_query.filter(Maintenance.userID == current_user.userID)
+
     if car_id:
         stats_query = stats_query.filter(Maintenance.carID == int(car_id))
     if type_filter:
         stats_query = stats_query.join(MaintenanceType).filter(MaintenanceType.name == type_filter)
-    if user_id:
+    if user_id and current_user.role != 'mechanic':
         stats_query = stats_query.filter(Maintenance.userID == int(user_id))
-    if status_filter:  # ← Применяем фильтр к статистике
+    if status_filter:
         stats_query = stats_query.filter(Maintenance.status == status_filter)
     if date_from:
         stats_query = stats_query.filter(Maintenance.startDate >= date_from)
@@ -1071,11 +1089,10 @@ def maintenance_records():
                          types=types,
                          filtered_vehicle=filtered_vehicle,
                          filtered_mechanic=filtered_mechanic,
-                         filtered_status=filtered_status,  # ← Передаём в шаблон
                          car_id=car_id,
                          type_filter=type_filter,
                          user_id=user_id,
-                         status_filter=status_filter,  # ← Передаём в шаблон
+                         status_filter=status_filter,
                          date_from=date_from,
                          date_to=date_to,
                          page=page,
@@ -1084,6 +1101,55 @@ def maintenance_records():
                          stats=stats,
                          sort_by=sort_by,
                          sort_order=sort_order)
+
+# Маршрут: Обновление статуса ТО
+@app.route('/maintenance/update_status/<int:record_id>', methods=['POST'])
+@login_required
+def update_maintenance_status(record_id):
+    maintenance = Maintenance.query.filter_by(maintenanceID=record_id).first_or_404()
+    
+    # Проверяем права доступа
+    if current_user.role != 'mechanic' or maintenance.userID != current_user.userID:
+        flash('У вас нет прав для изменения этой записи', 'error')
+        return jsonify({'success': False, 'message': 'Нет прав доступа'})
+    
+    try:
+        # Получаем новые значения
+        new_status = request.json.get('status')
+        new_description = request.json.get('description')
+        
+        if new_status:
+            # Проверяем допустимые статусы
+            allowed_statuses = ['planned', 'in_progress', 'completed', 'cancelled', 'on_hold']
+            if new_status not in allowed_statuses:
+                return jsonify({'success': False, 'message': 'Недопустимый статус'})
+            
+            # Логика перехода между статусами
+            old_status = maintenance.status
+            maintenance.status = new_status
+            
+            # Устанавливаем дату начала при переходе в "in_progress"
+            if new_status == 'in_progress' and old_status != 'in_progress':
+                if not maintenance.startDate:
+                    maintenance.startDate = datetime.now()
+            
+            # Устанавливаем дату завершения при переходе в "completed"
+            if new_status == 'completed':
+                maintenance.completeDate = datetime.now()
+            
+            # Сбрасываем дату завершения при выходе из "completed"
+            if new_status != 'completed' and old_status == 'completed':
+                maintenance.completeDate = None
+        
+        if new_description is not None:
+            maintenance.description = new_description
+        
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Статус успешно обновлён'})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': f'Ошибка: {str(e)}'})
 
 # Маршрут: Просмотр ТО
 @app.route('/maintenance/view/<int:record_id>')
@@ -1095,8 +1161,12 @@ def view_maintenance(record_id):
         db.joinedload(Maintenance.user)
     ).filter_by(maintenanceID=record_id).first_or_404()
     
+    # Проверяем права доступа
+    can_edit = current_user.role == 'mechanic' and maintenance.userID == current_user.userID
+    
     return render_template('maintenance/view_maintenance.html', 
-                         maintenance=maintenance)
+                         maintenance=maintenance,
+                         can_edit=can_edit)
     
 # Маршрут: Просмотр типов ТО
 @app.route('/maintenance/types')
@@ -1249,54 +1319,6 @@ def add_maintenance():
                            types=types,
                            mechanics=mechanics,
                            username=current_user.fullName)
-
-# Маршрут: Редактирование ТО
-@app.route('/maintenance/edit/<int:record_id>', methods=['GET', 'POST'])
-def edit_maintenance(record_id):
-    record = Maintenance.query.filter_by(maintenanceID=record_id).first()
-    
-    if not record:
-        flash('Запись не найдена!', 'error')
-        return redirect(url_for('maintenance_records'))
-    
-    if request.method == 'POST':
-        car_id = request.form['car_id']
-        type_id = request.form['type_id']
-        start_date = request.form['start_date']
-        complete_date = request.form['complete_date']
-        description = request.form['description']
-        parts_cost = request.form['parts_cost']
-        labor_cost = request.form['labor_cost']
-        
-        try:
-            record.carID = int(car_id)
-            record.typeID = int(type_id)
-            record.priority = request.form['priority']
-            record.userID = int(request.form['user_id'])
-            record.startDate = datetime.strptime(start_date, '%Y-%m-%d').date() if start_date else None
-            record.completeDate = datetime.strptime(complete_date, '%Y-%m-%d').date() if complete_date else None
-            record.description = description
-            record.partsCost = float(parts_cost) if parts_cost else None
-            record.laborCost = float(labor_cost) if labor_cost else 0.0
-            record.mileageAtService = int(request.form['mileage_at_service']) if request.form['mileage_at_service'] else None
-            record.nextServiceDate = datetime.strptime(request.form['next_service_date'], '%Y-%m-%d').date() if request.form['next_service_date'] else None
-            record.nextServiceMileage = int(request.form['next_service_mileage']) if request.form['next_service_mileage'] else None
-            record.status = request.form['status']
-            
-            db.session.commit()
-            flash('Запись ТО успешно обновлена!', 'success')
-            return redirect(url_for('maintenance_records'))
-            
-        except Exception as e:
-            db.session.rollback()
-            flash(f'Ошибка при обновлении записи: {str(e)}', 'error')
-    
-    # Получаем данные для выпадающих списков
-    cars = Car.query.order_by(Car.brand, Car.model).all()
-    types = MaintenanceType.query.order_by(MaintenanceType.name).all()
-    users = User.query.filter(User.role.contains('mechanic')).order_by(User.fullName).all()
-    
-    return render_template('maintenance/edit_maintenance.html', record=record, cars=cars, types=types, users=users)
 
 
 @app.route('/reminders')
@@ -1562,6 +1584,19 @@ def delete_reminder(reminder_id):
         flash(f'Ошибка при удалении напоминания: {str(e)}', 'error')
     
     return redirect(url_for('reminders'))
+
+# Маршрут: Ручной запуск автосоздания напоминания
+@app.route('/admin/reminders/generate-manual', methods=['POST'])
+@login_required
+def generate_reminders_manual():
+    if current_user.role != 'admin':
+        return jsonify({'success': False, 'message': 'Доступ запрещен'})
+    
+    try:
+        create_daily_reminders()  # Функция, которую ты уже создал
+        return jsonify({'success': True, 'message': 'Напоминания созданы успешно'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Ошибка: {str(e)}'})
 
 
 # Маршрут: Главная страница отчетов
