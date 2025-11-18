@@ -40,14 +40,6 @@
                         'manager': 'Менеджер'
                     }[current_user_obj.role] }}</span>
                 </div>
-                <div class="info-item">
-                    <label>Дата последнего входа:</label>
-                    <span>{{ current_user_obj.passwordDate.strftime('%d.%m.%Y %H:%M') if current_user_obj.passwordDate else '—' }}</span>
-                </div>
-                <div class="info-item">
-                    <label>Лицензия:</label>
-                    <span>{{ system_info.system.license }}</span>
-                </div>
             </div>
         </div>
 
