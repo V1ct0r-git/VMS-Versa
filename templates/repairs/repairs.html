@@ -2,6 +2,11 @@
 
 {% block title %}Ремонты - {{ system_info.system.name }}{% endblock %}
 
+
+{% block head%}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/repairs.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <!-- Заголовок и кнопка добавления -->
@@ -338,100 +343,4 @@
     </div>
 </div>
 
-<style>
-.vehicle-info strong {
-    display: block;
-}
-
-.vehicle-info small {
-    display: block;
-    font-size: 0.8rem;
-}
-
-.cost-cell {
-    font-weight: 600;
-    color: var(--primary);
-}
-
-.priority-badge {
-    padding: 0.25rem 0.5rem;
-    border-radius: var(--radius-sm);
-    font-size: 0.85rem;
-    font-weight: bold;
-    white-space: nowrap;
-}
-
-.priority-high {
-    background: var(--warning);
-    color: #212529;
-}
-
-.priority-medium {
-    background: #fd7e14;
-    color: var(--white);
-}
-
-.priority-low {
-    background: var(--success);
-    color: var(--white);
-}
-
-.priority-critical {
-    background: var(--danger);
-    color: var(--white);
-}
-
-.sort-link {
-    color: var(--text);
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-.sort-link:hover {
-    color: var(--primary);
-    text-decoration: none;
-}
-
-.sort-link i {
-    font-size: 0.8rem;
-    opacity: 0.5;
-}
-
-.sort-link:hover i {
-    opacity: 1;
-}
-
-.table-actions {
-    display: flex;
-    gap: 0.5rem;
-    justify-content: center;
-}
-
-.table-actions .btn {
-    padding: 0.25rem 0.5rem;
-    min-width: auto;
-}
-
-@media screen and (max-width: 768px) {
-    .vehicle-info {
-        text-align: center;
-    }
-    
-    .table-actions {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .data-table th a {
-        flex-direction: column;
-        gap: 0.1rem;
-    }
-    
-    .data-table th a i {
-        margin: 0;
-    }
-}
-</style>
 {% endblock %}

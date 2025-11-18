@@ -1,0 +1,116 @@
+/* Админка */
+.admin-grid {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+.admin-sidebar {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    height: fit-content;
+}
+
+.admin-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.admin-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    color: var(--text);
+    transition: var(--transition);
+}
+
+.admin-menu-item:hover,
+.admin-menu-item.active {
+    background: var(--primary-light);
+    color: var(--primary);
+    font-weight: 500;
+}
+
+.admin-menu-item i {
+    font-size: 1.1rem;
+    min-width: 20px;
+    text-align: center;
+}
+
+.admin-content {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+}
+
+.admin-content h2 {
+    margin-bottom: 1rem;
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: 0.5rem;
+    color: var(--text);
+}
+
+/* Быстрые действия */
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin: 1rem 0;
+}
+
+.action-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    text-align: center;
+    transition: var(--transition);
+    text-decoration: none;
+    color: var(--text);
+}
+
+.action-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+    text-decoration: none;
+    color: var(--text);
+}
+
+.action-card i {
+    font-size: 2.5rem;
+    color: var(--primary);
+    margin-bottom: 1rem;
+}
+
+.action-card h4 {
+    margin: 0.5rem 0;
+    color: var(--text);
+}
+
+.action-card p {
+    color: var(--text-light);
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+}
+
+/* Специфичный стиль alert для админки */
+.alert {
+    padding: 1rem;
+    border-radius: var(--radius);
+    margin-top: 1rem;
+    background-color: #e3f2fd;
+    border-left: 4px solid #2196f3;
+    color: #0d47a1;
+}
+
+.alert i {
+    color: #2196f3;
+}

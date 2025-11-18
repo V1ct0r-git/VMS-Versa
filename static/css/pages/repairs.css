@@ -1,0 +1,15 @@
+/* Специфичные стили для страницы ремонтов */
+
+.vehicle-info strong {
+    display: block;
+}
+
+.vehicle-info small {
+    display: block;
+    font-size: 0.8rem;
+}
+
+.cost-cell {
+    font-weight: 600;
+    color: var(--primary);
+}

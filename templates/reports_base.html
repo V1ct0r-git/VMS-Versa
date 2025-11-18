@@ -1,13 +1,11 @@
-
 {% extends "base.html" %}
 
 {% block title %}{{ page_title or 'Отчеты - Верса' }}{% endblock %}
 
 
 {% block head %}
-    {{ super() }} <!-- Наследуем базовые стили из reports_base.html -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/reports.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/reports.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/settings.css') }}">
 {% endblock %}
 
 {% block content %}

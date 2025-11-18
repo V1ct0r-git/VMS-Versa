@@ -2,6 +2,10 @@
 
 {% block title %}Информация о системе - {{ system_info.system.name }}{% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/system-info.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="page-header">
@@ -174,121 +178,4 @@
     </div>
 </div>
 
-<style>
-.system-info-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.tech-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-}
-
-.tech-item {
-    background: var(--light);
-    padding: 1rem;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--border);
-}
-
-.tech-item h5 {
-    margin: 0 0 0.5rem 0;
-    color: var(--primary);
-}
-
-.tech-item p {
-    margin: 0;
-    font-family: monospace;
-    font-size: 0.9rem;
-    color: var(--text-light);
-}
-
-.modules-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-}
-
-.module-card {
-    background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 1.5rem;
-    transition: var(--transition);
-}
-
-.module-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-lg);
-}
-
-.module-card h4 {
-    margin: 0 0 0.5rem 0;
-    color: var(--text);
-}
-
-.module-version {
-    color: var(--primary);
-    font-weight: 500;
-    margin: 0.25rem 0;
-}
-
-.module-description {
-    color: var(--text-light);
-    margin: 0.5rem 0;
-}
-
-.dependencies-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.dependency-item {
-    background: var(--light);
-    padding: 0.5rem 1rem;
-    border-radius: var(--radius-sm);
-    border-left: 4px solid var(--primary);
-}
-
-.requirements-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1rem;
-}
-
-.requirement-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid var(--border);
-}
-
-.requirement-item label {
-    font-weight: 500;
-    color: var(--text-light);
-}
-
-.requirement-item span {
-    color: var(--text);
-}
-
-.license-info {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1rem;
-}
-
-@media screen and (max-width: 768px) {
-    .tech-grid,
-    .modules-grid,
-    .requirements-grid,
-    .license-info {
-        grid-template-columns: 1fr;
-    }
-}
-</style>
 {% endblock %}

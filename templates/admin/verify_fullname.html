@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Верификация ФИО - Верса{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin.css') }}">
+<style>
+.verify-result {
+    margin-top: 20px;
+}
+.verify-item {
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 4px;
+}
+.verify-success {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+.verify-fail {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+.loading {
+    text-align: center;
+    padding: 20px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <div>
+            <h1 class="card-title">Верификация ФИО</h1>
+            <p class="text-muted">Проверка данных с внешнего сервера</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Проверка ФИО</h3>
+        </div>
+        <div class="card-body">
+            <button id="verifyBtn" class="btn btn-primary" onclick="verifyFullName()">
+                <i class="fas fa-sync-alt me-2"></i>
+                Запросить и проверить ФИО
+            </button>
+            
+            <div id="result" class="verify-result" style="display: none;">
+                <h4>Результаты проверки:</h4>
+                <div id="verificationResults"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function verifyFullName() {
+    const verifyBtn = document.getElementById('verifyBtn');
+    verifyBtn.disabled = true;
+    verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Загрузка...';
+    
+    try {
+        const response = await fetch('/api/get-fullname', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error(data.error || 'Неизвестная ошибка');
+        }
+        
+        displayVerificationResults(data.data.value, data.verification);
+    } catch (error) {
+        alert('Ошибка при получении данных: ' + error.message);
+    } finally {
+        verifyBtn.disabled = false;
+        verifyBtn.innerHTML = '<i class="fas fa-sync-alt me-2"></i>Запросить и проверить ФИО';
+    }
+}
+
+function displayVerificationResults(fullName, verification) {
+    const resultDiv = document.getElementById('result');
+    const verificationResultsDiv = document.getElementById('verificationResults');
+    
+    let resultsHTML = '';
+    
+    // Показываем полученное ФИО
+    resultsHTML += `
+        <div class="verify-item verify-success">
+            <strong>✓ Полученные данные:</strong> ${fullName || 'Не получены'}
+        </div>
+    `;
+    
+    // Проверки
+    const checks = [
+        {
+            name: 'Формат ФИО',
+            result: verification.format_check,
+            message: verification.format_check ? 'ФИО состоит из трех частей' : 'ФИО должно содержать фамилию, имя и отчество'
+        },
+        {
+            name: 'Только кириллица',
+            result: verification.cyrillic_check,
+            message: verification.cyrillic_check ? 'Содержит только кириллические символы и пробелы' : 'Содержит недопустимые символы'
+        },
+        {
+            name: 'Заглавные буквы',
+            result: verification.capital_letters_check,
+            message: verification.capital_letters_check ? 'Каждая часть начинается с заглавной буквы' : 'Каждая часть должна начинаться с заглавной буквы'
+        }
+    ];
+    
+    checks.forEach(check => {
+        const statusClass = check.result ? 'verify-success' : 'verify-fail';
+        const icon = check.result ? '✓' : '✗';
+        resultsHTML += `
+            <div class="verify-item ${statusClass}">
+                <strong>${icon} ${check.name}:</strong> ${check.message}
+            </div>
+        `;
+    });
+    
+    verificationResultsDiv.innerHTML = resultsHTML;
+    resultDiv.style.display = 'block';
+}
+</script>
+
+{% endblock %}

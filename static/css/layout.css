@@ -1,0 +1,215 @@
+/* Навигационная панель */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: white;
+    box-shadow: var(--shadow);
+    border-bottom: 1px solid var(--border);
+}
+
+.nav-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.nav-links {
+    display: flex;
+    gap: 1rem;
+}
+
+.nav-links a {
+    color: var(--text);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-sm);
+}
+
+.nav-links a:hover {
+    background: var(--primary);
+    color: var(--white);
+    text-decoration: none;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    color: var(--text);
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
+}
+
+.nav-link:hover {
+    background: var(--primary);
+    color: white;
+}
+
+.nav-link.active {
+    background: var(--primary);
+    color: white;
+}
+
+.user-profile {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.user-profile:hover {
+    background: var(--light);
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    background: var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.username {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.user-role {
+    font-size: 0.8rem;
+    color: var(--text-light);
+}
+
+.user-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    padding: 0.5rem;
+    min-width: 150px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    border: 1px solid var(--border);
+}
+
+.user-profile.active .user-dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    color: var(--text);
+    text-decoration: none;
+    transition: background-color 0.2s;
+    gap: 0.5rem;
+}
+
+.dropdown-item:hover {
+    background-color: var(--primary-light);
+    color: var(--white);
+}
+
+.logout-btn {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    color: var(--danger);
+    text-decoration: none;
+    transition: background-color 0.2s;
+    gap: 0.5rem;
+    border-top: 1px solid var(--border);
+}
+
+.logout-btn:hover {
+    background-color: var(--danger-light);
+    color: var(--white);
+}
+
+/* Футер */
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: var(--white);
+    color: var(--text-light);
+    border-top: 1px solid var(--border);
+}
+
+.footer-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.footer-logo i {
+    font-size: 1.5rem;
+    color: var(--primary);
+}
+
+.footer-links {
+    display: flex;
+    gap: 1rem;
+}
+
+.footer-links a {
+    color: var(--text-light);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.footer-links a:hover {
+    color: var(--primary);
+    text-decoration: underline;
+}
+
+.footer-bottom {
+    text-align: center;
+    padding: 0.5rem;
+    background: var(--light);
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+
+main {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    min-height: calc(100vh - 60px);
+    padding: 2rem;
+    margin: 1rem auto;
+    max-width: 1200px; /* Максимальная ширина контента */
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Верса{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     {% block head %}{% endblock %}
 </head>
@@ -135,80 +135,6 @@
             <p>&copy; 2025 {{ system_info.system.company }}. Все права защищены. v{{ system_info.system.version }}</p>
         </div>
     </footer>
-
-    <!-- Стили для flash-сообщений -->
-    <style>
-        .flash-messages-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 10000;
-            width: 350px;
-            max-width: calc(100% - 40px);
-        }
-
-        .flash-message {
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 6px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            position: relative;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            animation: slideInRight 0.3s ease-out;
-        }
-
-        @keyframes slideInRight {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        .flash-error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .flash-warning {
-            background-color: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeaa7;
-        }
-
-        .flash-success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .flash-info {
-            background-color: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-
-        .flash-close-btn {
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            color: inherit;
-            padding: 0;
-            margin-left: 10px;
-            line-height: 1;
-        }
-
-        .flash-close-btn:hover {
-            opacity: 0.7;
-        }
-    </style>
 
     <!-- Скрипты -->
     <script>

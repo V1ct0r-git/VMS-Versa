@@ -1,0 +1,81 @@
+/* Таблицы */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.data-table th {
+    background-color: var(--light);
+    font-weight: 600;
+    color: var(--text);
+}
+
+.data-table tr:hover {
+    background-color: var(--light);
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.table-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.table-actions .btn {
+    padding: 0.25rem 0.5rem;
+    min-width: auto;
+}
+
+/* Пагинация */
+.pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+}
+
+.pagination-info {
+    color: var(--text-light);
+    font-size: 0.875rem;
+}
+
+.pagination {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.page-link {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.page-link:hover {
+    background: var(--light);
+    border-color: #adb5bd;
+}
+
+.page-link.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--white);
+}

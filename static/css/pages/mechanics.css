@@ -1,0 +1,326 @@
+/* Специфичные стили для страниц механиков */
+
+/* Карточки профиля */
+.info-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    flex: 1;
+    min-width: 0; /* Чтобы карточки могли сжиматься */
+}
+
+.info-header {
+    background: var(--light);
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.info-header h4 {
+    margin: 0;
+    color: var(--primary);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.info-content {
+    padding: 0.75rem 1rem;
+}
+
+/* Компактная сетка информации */
+.info-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.5rem 1rem;
+    align-items: center;
+}
+
+.info-label {
+    font-weight: 500;
+    color: var(--text-light);
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.info-value {
+    color: var(--text);
+    font-weight: 500;
+    font-size: 0.9rem;
+    word-break: break-word;
+}
+
+/* Для бейджей статуса */
+.info-value .badge {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.4rem;
+    min-width: auto;
+}
+
+/* Сетка из трех колонок */
+.profile-grid-three {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+/* Сетка последних работ */
+.recent-works-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.work-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    transition: var(--transition);
+    position: relative;
+}
+
+.work-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+
+.work-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.work-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+}
+
+.work-title h5 {
+    margin: 0;
+    color: var(--text);
+    font-size: 0.95rem;
+}
+
+.work-title small {
+    display: block;
+    color: var(--text-light);
+    font-size: 0.8rem;
+}
+
+.work-details {
+    margin: 0.75rem 0;
+}
+
+.work-car {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-light);
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+
+.work-status {
+    display: inline-block;
+    margin-top: 0.25rem;
+}
+
+.work-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.75rem;
+}
+
+.work-actions .btn {
+    padding: 0.25rem 0.5rem;
+    min-width: auto;
+}
+
+/* Страница списка механиков */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.user-avatar-small {
+    width: 30px;
+    height: 30px;
+    background: var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    font-size: 0.8rem;
+}
+
+.user-details strong {
+    display: block;
+}
+
+.user-details small {
+    display: block;
+    font-size: 0.8rem;
+}
+
+.contact-info i {
+    margin-right: 0.25rem;
+    color: var(--text-light);
+}
+
+.table-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.table-actions .btn {
+    padding: 0.25rem 0.5rem;
+    min-width: auto;
+}
+
+/* Общие стили страницы */
+.page-title-section {
+    flex: 1;
+}
+
+.page-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.page-subtitle {
+    color: var(--text-light);
+    margin: 0.25rem 0 0 0;
+}
+
+
+/* Адаптивность для механиков */
+@media screen and (max-width: 1024px) {
+    .profile-grid-three {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .profile-grid-three {
+        grid-template-columns: 1fr;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+        gap: 0.25rem 0;
+    }
+    
+    .info-label {
+        font-weight: 500;
+        color: var(--text-light);
+        font-size: 0.85rem;
+        display: block;
+        margin-bottom: 0.1rem;
+    }
+    
+    .info-value {
+        color: var(--text);
+        font-weight: 500;
+        font-size: 0.9rem;
+        word-break: break-word;
+        padding-left: 0.5rem;
+    }
+    
+    .info-value::before {
+        content: "• ";
+        color: var(--primary);
+        margin-right: 0.25rem;
+    }
+    
+    .recent-works-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .work-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .work-icon {
+        align-self: center;
+    }
+    
+    .work-title {
+        text-align: center;
+        width: 100%;
+    }
+    
+    .work-title h5 {
+        text-align: center;
+    }
+    
+    .work-title small {
+        text-align: center;
+    }
+    
+    .work-car {
+        justify-content: center;
+    }
+    
+    .work-actions {
+        justify-content: center;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .info-header h4 {
+        font-size: 0.9rem;
+        gap: 0.3rem;
+    }
+    
+    .info-header {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .info-content {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .info-label {
+        font-size: 0.8rem;
+    }
+    
+    .info-value {
+        font-size: 0.85rem;
+    }
+    
+    .work-card {
+        padding: 0.75rem;
+    }
+    
+    .work-icon {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .work-title h5 {
+        font-size: 0.9rem;
+    }
+    
+    .work-title small {
+        font-size: 0.75rem;
+    }
+}

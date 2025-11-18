@@ -2,6 +2,10 @@
 
 {% block title %}Дашборд - {{ system_info.system.name }}{% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/dashboard.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <!-- Приветствие -->
@@ -95,41 +99,6 @@
         </div>
     </div>
 
-    <!-- Приоритеты ТО -->
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title"><i class="fas fa-tasks"></i> Распределение по приоритету ТО</h3>
-        </div>
-        <div class="card-body">
-            <div class="priority-stats">
-                <div class="priority-item">
-                    <div class="priority-badge priority-critical">
-                        Критический
-                    </div>
-                    <div class="priority-count">{{ stats.critical_priority }}</div>
-                </div>
-                <div class="priority-item">
-                    <div class="priority-badge priority-high">
-                        Высокий
-                    </div>
-                    <div class="priority-count">{{ stats.high_priority }}</div>
-                </div>
-                <div class="priority-item">
-                    <div class="priority-badge priority-medium">
-                        Средний
-                    </div>
-                    <div class="priority-count">{{ stats.medium_priority }}</div>
-                </div>
-                <div class="priority-item">
-                    <div class="priority-badge priority-low">
-                        Низкий
-                    </div>
-                    <div class="priority-count">{{ stats.low_priority }}</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Основной контент -->
     <div class="dashboard-grid">
         <!-- Последние записи ТО -->
@@ -179,334 +148,68 @@
         </div>
 
         <!-- Последние напоминания -->
-<div class="dashboard-card">
-    <div class="card-header">
-        <h3 class="card-title"><i class="fas fa-bell"></i> Последние напоминания</h3>
-        <a href="{{ url_for('reminders') }}" class="view-all-link">Просмотреть все</a>
-    </div>
-    <div class="card-body">
-        {% if latest_reminders %}
-        <div class="latest-reminders">
-            {% for reminder in latest_reminders %}
-            <div class="reminder-item">
-                <div class="reminder-icon">
-                    {% if reminder.reminderType == 'maintenance' %}
-                        <i class="fas fa-wrench"></i>
-                    {% elif reminder.reminderType == 'inspection' %}
-                        <i class="fas fa-file-signature"></i>
-                    {% elif reminder.reminderType == 'insurance' %}
-                        <i class="fas fa-shield-alt"></i>
-                    {% elif reminder.reminderType == 'license' %}
-                        <i class="fas fa-id-card"></i>
-                    {% else %}
-                        <i class="fas fa-exclamation-circle"></i>
-                    {% endif %}
-                </div>
-                <div class="reminder-content">
-                    <div class="reminder-header">
-                        <h4>{{ reminder.message or 'Напоминание' }}</h4>
-                        <span class="reminder-date">{{ reminder.createdAt.strftime('%d.%m.%Y %H:%M') if reminder.createdAt else reminder.remindDate.strftime('%d.%m.%Y') }}</span>
-                    </div>
-                    <div class="reminder-car">
-                        <i class="fas fa-car"></i> {{ reminder.car_brand }} {{ reminder.car_model }}
-                    </div>
-                    <div class="reminder-type">
-                        <span class="badge badge-info">
-                            {{ {
-                                'maintenance': 'ТО',
-                                'inspection': 'Техосмотр',
-                                'insurance': 'Страховка',
-                                'license': 'Лицензия',
-                                'other': 'Другое'
-                            }[reminder.reminderType] }}
-                        </span>
-                    </div>
-                </div>
-                <a href="{{ url_for('view_reminder', reminder_id=reminder.reminderID) }}" class="reminder-link">
-                    <i class="fas fa-arrow-right"></i>
-                </a>
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-bell"></i> Последние напоминания</h3>
+                <a href="{{ url_for('reminders') }}" class="view-all-link">Просмотреть все</a>
             </div>
-            {% endfor %}
+            <div class="card-body">
+                {% if latest_reminders %}
+                <div class="latest-reminders">
+                    {% for reminder in latest_reminders %}
+                    <div class="reminder-item">
+                        <div class="reminder-icon">
+                            {% if reminder.reminderType == 'maintenance' %}
+                                <i class="fas fa-wrench"></i>
+                            {% elif reminder.reminderType == 'inspection' %}
+                                <i class="fas fa-file-signature"></i>
+                            {% elif reminder.reminderType == 'insurance' %}
+                                <i class="fas fa-shield-alt"></i>
+                            {% elif reminder.reminderType == 'license' %}
+                                <i class="fas fa-id-card"></i>
+                            {% else %}
+                                <i class="fas fa-exclamation-circle"></i>
+                            {% endif %}
+                        </div>
+                        <div class="reminder-content">
+                            <div class="reminder-header">
+                                <h4>{{ reminder.message or 'Напоминание' }}</h4>
+                                <span class="reminder-date">{{ reminder.createdAt.strftime('%d.%m.%Y %H:%M') if reminder.createdAt else reminder.remindDate.strftime('%d.%m.%Y') }}</span>
+                            </div>
+                            <div class="reminder-car">
+                                <i class="fas fa-car"></i> {{ reminder.car_brand }} {{ reminder.car_model }}
+                            </div>
+                            <div class="reminder-type">
+                                <span class="badge badge-info">
+                                    {{ {
+                                        'maintenance': 'ТО',
+                                        'inspection': 'Техосмотр',
+                                        'insurance': 'Страховка',
+                                        'license': 'Лицензия',
+                                        'other': 'Другое'
+                                    }[reminder.reminderType] }}
+                                </span>
+                            </div>
+                        </div>
+                        <a href="{{ url_for('view_reminder', reminder_id=reminder.reminderID) }}" class="reminder-link">
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="no-data">
+                    <i class="fas fa-inbox"></i>
+                    <p>Нет последних напоминаний</p>
+                    <a href="{{ url_for('reminders') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Добавить напоминание
+                    </a>
+                </div>
+                {% endif %}
+            </div>
         </div>
-        {% else %}
-        <div class="no-data">
-            <i class="fas fa-inbox"></i>
-            <p>Нет последних напоминаний</p>
-            <a href="{{ url_for('reminders') }}" class="btn btn-primary">
-                <i class="fas fa-plus"></i>
-                Добавить напоминание
-            </a>
-        </div>
-        {% endif %}
     </div>
 </div>
-    </div>
 
-</div>
-{% endblock %}
-
-{% block styles %}
-<style>
-.dashboard-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
-}
-
-.dashboard-card {
-    background: var(--white);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    overflow: hidden;
-}
-
-.view-all-link {
-    color: var(--primary);
-    text-decoration: none;
-    font-size: 0.9rem;
-    font-weight: 500;
-}
-
-.view-all-link:hover {
-    text-decoration: underline;
-}
-
-.recent-activities,
-.upcoming-reminders {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.activity-item,
-.reminder-item {
-    display: flex;
-    align-items: center;
-    padding: 1rem;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    transition: var(--transition);
-    position: relative;
-}
-
-.activity-item:hover,
-.reminder-item:hover {
-    border-color: var(--primary);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow);
-}
-
-.activity-icon,
-.reminder-icon {
-    width: 40px;
-    height: 40px;
-    background: var(--light);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 1rem;
-    color: var(--primary);
-    font-size: 1.2rem;
-}
-
-.activity-content,
-.reminder-content {
-    flex: 1;
-    min-width: 0;
-}
-
-.activity-header,
-.reminder-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.25rem;
-}
-
-.activity-header h4,
-.reminder-header h4 {
-    margin: 0;
-    font-size: 1rem;
-    color: var(--text);
-    font-weight: 600;
-}
-
-.activity-date,
-.reminder-date {
-    font-size: 0.85rem;
-    color: var(--text-light);
-}
-
-.activity-details {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.25rem;
-}
-
-.activity-type {
-    font-size: 0.85rem;
-    color: var(--text-light);
-    background: var(--light);
-    padding: 0.25rem 0.5rem;
-    border-radius: var(--radius-sm);
-}
-
-.activity-cost {
-    font-weight: 600;
-    color: var(--primary);
-}
-
-.activity-mechanic {
-    font-size: 0.85rem;
-    color: var(--text-light);
-}
-
-.reminder-car {
-    font-size: 0.85rem;
-    color: var(--text-light);
-}
-
-.activity-link,
-.reminder-link {
-    color: var(--primary);
-    text-decoration: none;
-    margin-left: 1rem;
-    opacity: 0;
-    transition: var(--transition);
-}
-
-.activity-item:hover .activity-link,
-.reminder-item:hover .reminder-link {
-    opacity: 1;
-}
-
-.cost-cell {
-    font-weight: 600;
-    color: var(--primary);
-}
-
-.stat-card {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1.5rem;
-}
-
-.stat-icon {
-    width: 50px;
-    height: 50px;
-    background: var(--primary);
-    border-radius: var(--radius);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--white);
-    font-size: 1.5rem;
-}
-
-.stat-content {
-    flex: 1;
-}
-
-.system-status-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-}
-
-.status-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem;
-    background: var(--light);
-    border-radius: var(--radius);
-}
-
-.status-icon {
-    width: 40px;
-    height: 40px;
-    background: var(--primary);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--white);
-}
-
-.status-content h4 {
-    margin: 0 0 0.25rem 0;
-    font-size: 1rem;
-    color: var(--text);
-}
-
-.status-badge {
-    padding: 0.25rem 0.5rem;
-    border-radius: var(--radius-sm);
-    font-size: 0.75rem;
-    font-weight: 500;
-}
-
-.status-success {
-    background: #d4edda;
-    color: #155724;
-}
-
-.welcome-section {
-    flex: 1;
-}
-
-.dashboard-actions {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-}
-
-@media screen and (max-width: 768px) {
-    .dashboard-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .page-header {
-        flex-direction: column;
-        gap: 1rem;
-        align-items: flex-start;
-    }
-    
-    .dashboard-actions {
-        width: 100%;
-        justify-content: space-between;
-    }
-    
-    .activity-header,
-    .reminder-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.25rem;
-    }
-    
-    .activity-details {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.25rem;
-    }
-    
-    .system-status-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .stat-card {
-        flex-direction: column;
-        text-align: center;
-        gap: 0.5rem;
-    }
-    
-    .stat-icon {
-        align-self: center;
-    }
-}
-</style>
 {% endblock %}

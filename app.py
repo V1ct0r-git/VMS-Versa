@@ -20,6 +20,7 @@ from apscheduler.triggers.cron import CronTrigger
 import atexit
 import base64
 import re
+import requests
 
 
 # Настройки Flask
@@ -1589,18 +1590,6 @@ def delete_reminder(reminder_id):
     
     return redirect(url_for('reminders'))
 
-# Маршрут: Ручной запуск автосоздания напоминания
-@app.route('/admin/reminders/generate-manual', methods=['POST'])
-@login_required
-def generate_reminders_manual():
-    if current_user.role != 'admin':
-        return jsonify({'success': False, 'message': 'Доступ запрещен'})
-    
-    try:
-        create_daily_reminders()  # Функция, которую ты уже создал
-        return jsonify({'success': True, 'message': 'Напоминания созданы успешно'})
-    except Exception as e:
-        return jsonify({'success': False, 'message': f'Ошибка: {str(e)}'})
 
 
 # Маршрут: Главная страница отчетов
@@ -1868,6 +1857,18 @@ def report_fleet_summary():
     return render_template('reports/fleet_summary.html', active_report='fleet_summary')
 
 
+# Маршрут: Ручной запуск автосоздания напоминания
+@app.route('/admin/reminders/generate-manual', methods=['POST'])
+@login_required
+def generate_reminders_manual():
+    if current_user.role != 'admin':
+        return jsonify({'success': False, 'message': 'Доступ запрещен'})
+    
+    try:
+        create_daily_reminders()  # Функция, которую ты уже создал
+        return jsonify({'success': True, 'message': 'Напоминания созданы успешно'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Ошибка: {str(e)}'})
 
 # Маршрут: Админ панель
 @app.route('/admin')
@@ -1902,6 +1903,75 @@ def admin():
     return render_template('admin/admin.html', 
                          username=current_user.fullName,
                          stats=stats)
+
+
+# Маршрут: Верификация ФИО
+@app.route('/admin/verify-fullname')
+@login_required
+def admin_verify_fullname():
+    if current_user.role != 'admin':
+        flash('Доступ запрещен! Требуются права администратора.', 'error')
+        return redirect(url_for('dashboard'))
+    
+    return render_template('admin/verify_fullname.html', 
+                         username=current_user.fullName)
+
+# API маршрут для получения данных с внешнего сервера
+@app.route('/api/get-fullname')
+@login_required
+def get_fullname():
+    if current_user.role != 'admin':
+        return {'error': 'Доступ запрещен'}, 403
+    
+    try:
+        response = requests.get('http://prb.sylas.ru/TransferSimulator/fullName', timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        
+        # Добавляем результаты проверки
+        verification_results = verify_fullname(data.get('value', ''))
+        
+        return {
+            'success': True,
+            'data': data,
+            'verification': verification_results
+        }
+    except Exception as e:
+        return {
+            'success': False,
+            'error': str(e)
+        }, 500
+
+def verify_fullname(full_name):
+    """Функция проверки ФИО"""
+    if not full_name or not isinstance(full_name, str):
+        return {
+            'received_data': False,
+            'format_check': False,
+            'cyrillic_check': False,
+            'capital_letters_check': False,
+            'error': 'Неверный формат данных'
+        }
+    
+    # Проверка формата (три части)
+    parts = re.split(r'\s+', full_name.strip())
+    format_check = len(parts) == 3
+    
+    # Проверка только кириллицы
+    cyrillic_regex = re.compile(r'^[а-яёА-ЯЁ\s]+$')
+    cyrillic_check = cyrillic_regex.match(full_name.strip()) is not None
+    
+    # Проверка заглавных букв
+    capital_letters_check = all(part and part[0] == part[0].upper() for part in parts)
+    
+    return {
+        'received_data': True,
+        'full_name': full_name,
+        'format_check': format_check,
+        'cyrillic_check': cyrillic_check,
+        'capital_letters_check': capital_letters_check,
+        'parts': parts
+    }
     
 # Маршрут: Админ панель создание напоминаний
 @app.route('/admin/reminders/generate', methods=['POST'])

@@ -1,0 +1,71 @@
+/* Специфичные стили для страниц автомобилей */
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem 0;
+}
+
+.info-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.info-item label {
+    font-weight: 600;
+    color: var(--text-light);
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.info-value {
+    font-size: 1rem;
+    color: var(--text);
+    word-break: break-word;
+}
+
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem 1rem;
+    background: var(--light);
+    border-radius: var(--radius);
+    text-align: center;
+    text-decoration: none;
+    color: var(--text);
+    transition: var(--transition);
+    border: 1px solid var(--border);
+    position: relative;
+}
+
+.action-btn:hover {
+    background: var(--border);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    text-decoration: none;
+    color: var(--text);
+}
+
+.action-btn i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: var(--primary);
+}
+
+.action-btn span {
+    font-weight: 500;
+}
