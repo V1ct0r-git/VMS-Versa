@@ -18,16 +18,20 @@ import json
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 import atexit
-
+import base64
+import re
 
 
 # Настройки Flask
 app = Flask(__name__)
 app.secret_key = "21232f297a57a5a743894a0e4a801fc3"
 
+# заранее закодированная строка с данными для подключения к базе
+encrypted_string = "bXlzcWwrcHlteXNxbDovL1NjaGxlZ2VsOjEwX29TbUAxMzQuOTAuMTY3LjQyOjEwMzA2L3Byb2plY3RfU2NobGVnZWw="
+connection_string = base64.b64decode(encrypted_string).decode()
 
 # Настройки SQLAlchemy
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://Schlegel:10_oSm@134.90.167.42:10306/project_Schlegel'
+app.config['SQLALCHEMY_DATABASE_URI'] = connection_string
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
@@ -1995,6 +1999,17 @@ def admin_backup():
     backups = get_backup_list()
     return render_template('admin/admin_backup.html', backups=backups)
 
+def extract_date_from_filename(filename):
+    # Ищем дату в формате YYYYMMDD_HHMMSS
+    match = re.search(r'(\d{8})_(\d{6})', filename)
+    if match:
+        date_str = match.group(1)  # YYYYMMDD
+        time_str = match.group(2)  # HHMMSS
+        # Форматируем в YYYY-MM-DD HH:MM:SS
+        formatted = f"{date_str[:4]}-{date_str[4:6]}-{date_str[6:8]} {time_str[:2]}:{time_str[2:4]}:{time_str[4:6]}"
+        return datetime.strptime(formatted, '%Y-%m-%d %H:%M:%S')
+    return None
+
 def get_backup_list():
     # Проверяем, нужно ли создать автоматический бэкап за сегодня
     ensure_daily_auto_backup()
@@ -2009,13 +2024,23 @@ def get_backup_list():
             if size == 0:
                 print(f"Предупреждение: бэкап {filename_base} имеет размер 0 байт — возможно, он пустой или поврежден.")
                 continue  # Пропускаем этот файл
-            mtime = datetime.fromtimestamp(stat.st_mtime)
-            days_old = (datetime.now() - mtime).days
+
+            # Получаем дату из имени файла
+            filename_base = os.path.basename(f)
+            mtime = extract_date_from_filename(filename_base)
+
+            if mtime is None:
+                print(f"Не удалось извлечь дату из файла: {filename_base}, используем дату модификации")
+                mtime = datetime.fromtimestamp(stat.st_mtime)
+
+            # Вычисляем разницу в днях
+            now = datetime.now()
+            days_old = int((now - mtime).total_seconds() // (24 * 3600))
+
             is_too_recent = days_old < 7
-            is_favorite = os.path.basename(f) in load_favorites()
+            is_favorite = filename_base in load_favorites()
 
             # Определяем тип бэкапа из имени файла
-            filename_base = os.path.basename(f)
             is_auto = filename_base.startswith('auto_')
             source_label = "Автоматически" if is_auto else "Вручную"
 
@@ -2110,7 +2135,7 @@ def delete_backup():
 
     # Получаем время последнего изменения файла
     mtime = datetime.fromtimestamp(os.path.getmtime(filepath))
-    days_old = (datetime.now() - mtime).days
+    days_old = (datetime.now() - mtime).days if (datetime.now() - mtime).days >= 0 else 0
 
     if days_old < 7:
         return jsonify({
