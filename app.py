@@ -2347,7 +2347,10 @@ def system_info_page():
 # Маршрут: Информация о сайте
 @app.route('/about')
 def about():
-    return render_template('system/about.html', username=current_user.fullName if current_user.is_authenticated else None)
+    system_info = get_system_info()
+    return render_template('system/about.html', 
+                         username=current_user.fullName if current_user.is_authenticated else None,
+                         system_info=system_info)
 
 # Маршрут: Помощь
 @app.route('/help')

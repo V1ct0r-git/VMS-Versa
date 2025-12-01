@@ -2,6 +2,10 @@
 
 {% block title %}О системе - Верса{% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/system-info.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="card">
@@ -55,10 +59,11 @@
                 <div class="about-section">
                     <h2>Техническая информация</h2>
                     <div class="tech-info">
-                        <p><strong>Версия:</strong> 1.0.0</p>
-                        <p><strong>Разработчик:</strong> Система управления транспортом</p>
+                        <p><strong>Версия:</strong> {{ system_info.system.version }}</p>
+                        <p><strong>Разработчик:</strong> {{ system_info.system.author }}</p>
+                        <p><strong>Компания:</strong> {{ system_info.system.company }}</p>
                         <p><strong>Технологии:</strong> Flask, SQLAlchemy, MySQL, HTML5, CSS3, JavaScript</p>
-                        <p><strong>Дата разработки:</strong> 2025 год</p>
+                        <p><strong>Дата разработки:</strong> {{ system_info.system.last_update }}</p>
                     </div>
                 </div>
                 
