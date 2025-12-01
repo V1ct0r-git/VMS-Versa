@@ -9,36 +9,55 @@
             <h1 class="card-title">Контакты и поддержка</h1>
         </div>
         <div class="card-body">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="alert-container">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
             <div class="contact-content">
                 <div class="contact-intro">
                     <p>Если у вас возникли вопросы по работе системы или вам нужна техническая поддержка, свяжитесь с нами удобным для вас способом.</p>
                 </div>
                 
                 <div class="contact-grid">
-                    <div class="contact-card">
-                        <i class="fas fa-phone"></i>
-                        <h3>Телефон поддержки</h3>
-                        <p>+7 (XXX) XXX-XX-XX</p>
-                        <p>Рабочие дни: Пн-Пт, 9:00-18:00</p>
-                    </div>
+                    {% if admin_users %}
+                        <div class="contact-card">
+                            <i class="fas fa-users"></i>
+                            <h3>Администраторы системы</h3>
+                            <div class="admin-list">
+                                {% for admin in admin_users %}
+                                    <div class="admin-item">
+                                        <h4>{{ admin.fullName }}</h4>
+                                        <p><i class="fas fa-envelope"></i> {{ admin.mail }}</p>
+                                        {% if admin.phone %}<p><i class="fas fa-phone"></i> {{ admin.phone }}</p>{% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="contact-card">
+                            <i class="fas fa-users"></i>
+                            <h3>Администраторы системы</h3>
+                            <p>В системе пока не созданы администраторы</p>
+                        </div>
+                    {% endif %}
                     
                     <div class="contact-card">
                         <i class="fas fa-envelope"></i>
-                        <h3>Электронная почта</h3>
+                        <h3>Общая поддержка</h3>
                         <p>support@versa-system.ru</p>
-                        <p>help@versa-system.ru</p>
-                    </div>
-                    
-                    <div class="contact-card">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <h3>Адрес</h3>
-                        <p>г. Москва, ул. Техническая, д. 15</p>
-                        <p>Офис 305</p>
                     </div>
                     
                     <div class="contact-card">
                         <i class="fas fa-clock"></i>
-                        <h3>Время работы</h3>
+                        <h3>Время работы поддержки</h3>
                         <p>Пн-Пт: 9:00 - 18:00</p>
                         <p>Сб: 10:00 - 14:00</p>
                         <p>Вс: выходной</p>
@@ -47,6 +66,7 @@
                 
                 <div class="contact-form-section">
                     <h2>Обратная связь</h2>
+                    <p class="text-muted">Для срочных вопросов вы можете напрямую связаться с администраторами, указанными выше. Для общих вопросов и отчетов об ошибках используйте форму ниже.</p>
                     <form class="contact-form" method="POST" action="{{ url_for('contact') }}">
                         <div class="form-grid">
                             <div class="form-group">
