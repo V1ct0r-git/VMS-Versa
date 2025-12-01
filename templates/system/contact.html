@@ -2,6 +2,10 @@
 
 {% block title %}Контакты - Верса{% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/system-info.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="card">
@@ -49,11 +53,7 @@
                         </div>
                     {% endif %}
                     
-                    <div class="contact-card">
-                        <i class="fas fa-envelope"></i>
-                        <h3>Общая поддержка</h3>
-                        <p>support@versa-system.ru</p>
-                    </div>
+
                     
                     <div class="contact-card">
                         <i class="fas fa-clock"></i>
@@ -64,70 +64,9 @@
                     </div>
                 </div>
                 
-                <div class="contact-form-section">
-                    <h2>Обратная связь</h2>
-                    <p class="text-muted">Для срочных вопросов вы можете напрямую связаться с администраторами, указанными выше. Для общих вопросов и отчетов об ошибках используйте форму ниже.</p>
-                    <form class="contact-form" method="POST" action="{{ url_for('contact') }}">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label class="form-label" for="name">Ваше имя</label>
-                                <input type="text" class="form-control" id="name" name="name" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label class="form-label" for="email">Email</label>
-                                <input type="email" class="form-control" id="email" name="email" required>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label" for="subject">Тема сообщения</label>
-                            <select class="form-control" id="subject" name="subject" required>
-                                <option value="">Выберите тему</option>
-                                <option value="technical">Техническая поддержка</option>
-                                <option value="bug">Сообщить об ошибке</option>
-                                <option value="feature">Предложить улучшение</option>
-                                <option value="question">Общий вопрос</option>
-                                <option value="other">Другое</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label" for="message">Сообщение</label>
-                            <textarea class="form-control" id="message" name="message" rows="5" placeholder="Опишите ваш вопрос или проблему..." required></textarea>
-                        </div>
-                        
-                        <div class="form-actions">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-paper-plane"></i>
-                                Отправить сообщение
-                            </button>
-                        </div>
-                    </form>
-                </div>
+
                 
-                <div class="contact-info-section">
-                    <h2>Дополнительная информация</h2>
-                    <div class="info-grid">
-                        <div class="info-card">
-                            <h3>Для клиентов</h3>
-                            <ul>
-                                <li>Круглосуточная техническая поддержка</li>
-                                <li>Обучение работе с системой</li>
-                                <li>Консультации по оптимизации процессов</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="info-card">
-                            <h3>Для администраторов</h3>
-                            <ul>
-                                <li>Консультации по настройке системы</li>
-                                <li>Обновления и патчи</li>
-                                <li>Поддержка интеграции с другими системами</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
+
             </div>
         </div>
     </div>
