@@ -21,13 +21,13 @@
                     <i class="fas fa-cog"></i>
                     <span>Общие</span>
                 </a>
+                <a href="{{ url_for('profile_settings') }}" class="settings-menu-item {% if active_page == 'profile' %}active{% endif %}">
+                    <i class="fas fa-user"></i>
+                    <span>Профиль</span>
+                </a>
                 <a href="{{ url_for('password_settings') }}" class="settings-menu-item {% if active_page == 'security' %}active{% endif %}">
                     <i class="fas fa-lock"></i>
                     <span>Безопасность</span>
-                </a>
-                <a href="{{ url_for('notification_settings') }}" class="settings-menu-item {% if active_page == 'notifications' %}active{% endif %}">
-                    <i class="fas fa-bell"></i>
-                    <span>Уведомления</span>
                 </a>
             </div>
         </div>

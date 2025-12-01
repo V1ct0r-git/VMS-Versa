@@ -1,0 +1,78 @@
+{% extends "settings_base.html" %}
+
+{% block page_title %}Профиль{% endblock %}
+{% block active_page %}profile{% endblock %}
+
+{% block settings_content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Настройки профиля</h3>
+    </div>
+    <div class="card-body">
+        <form method="POST" class="profile-form">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">ФИО *</label>
+                    <input type="text" name="full_name" class="form-control" 
+                           value="{{ current_user_obj.fullName }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-control" 
+                           value="{{ current_user_obj.mail }}">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Телефон</label>
+                    <input type="tel" name="phone" class="form-control" 
+                           value="{{ current_user_obj.phone }}">
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    Сохранить изменения
+                </button>
+                <a href="{{ url_for('profile_settings') }}" class="btn btn-outline">
+                    <i class="fas fa-redo"></i>
+                    Сбросить
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Информация о пользователе</h3>
+    </div>
+    <div class="card-body">
+        <div class="user-info">
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Имя пользователя:</label>
+                    <span>{{ current_user_obj.username }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Роль:</label>
+                    <span class="badge badge-info">{{ {
+                        'admin': 'Администратор',
+                        'mechanic': 'Механик',
+                        'manager': 'Менеджер'
+                    }[current_user_obj.role] }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Дата регистрации:</label>
+                    <span>{{ current_user_obj.registrationDate.strftime('%d.%m.%Y %H:%M') if current_user_obj.registrationDate else 'Не указана' }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Последний вход:</label>
+                    <span>{{ current_user_obj.lastLogin.strftime('%d.%m.%Y %H:%M') if current_user_obj.lastLogin else 'Не указана' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -28,9 +28,27 @@
                     <label>Последнее обновление:</label>
                     <span>{{ system_info.system.last_update }}</span>
                 </div>
+            </div>
+        </div>
+
+        <div class="user-info">
+            <h4>Информация о пользователе</h4>
+            <div class="info-grid">
                 <div class="info-item">
-                    <label>Текущий пользователь:</label>
+                    <label>ФИО:</label>
                     <span>{{ current_user_obj.fullName }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Email:</label>
+                    <span>{{ current_user_obj.mail if current_user_obj.mail else 'Не указан' }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Телефон:</label>
+                    <span>{{ current_user_obj.phone if current_user_obj.phone else 'Не указан' }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Имя пользователя:</label>
+                    <span>{{ current_user_obj.username }}</span>
                 </div>
                 <div class="info-item">
                     <label>Роль:</label>
@@ -40,6 +58,20 @@
                         'manager': 'Менеджер'
                     }[current_user_obj.role] }}</span>
                 </div>
+                <div class="info-item">
+                    <label>Дата регистрации:</label>
+                    <span>{{ current_user_obj.registrationDate.strftime('%d.%m.%Y %H:%M') if current_user_obj.registrationDate else 'Не указана' }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Последний вход:</label>
+                    <span>{{ current_user_obj.lastLogin.strftime('%d.%m.%Y %H:%M') if current_user_obj.lastLogin else 'Не указан' }}</span>
+                </div>
+            </div>
+            <div class="form-actions" style="margin-top: 20px;">
+                <a href="{{ url_for('profile_settings') }}" class="btn btn-primary">
+                    <i class="fas fa-user-edit"></i>
+                    Редактировать профиль
+                </a>
             </div>
         </div>
 

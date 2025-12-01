@@ -2335,24 +2335,6 @@ def password_settings():
                          username=current_user.fullName,
                          current_user_obj=current_user)
 
-# Маршрут: Настройки уведомлений                                !!!Подумать нужны ли!!!
-@app.route('/settings/notifications', methods=['GET', 'POST'])
-@login_required
-def notification_settings():
-    if request.method == 'POST':
-        try:
-            # Здесь можно добавить логику сохранения настроек уведомлений
-            # Пока просто показываем сообщение
-            flash('Настройки уведомлений сохранены!', 'success')
-            return redirect(url_for('notification_settings'))
-        except Exception as e:
-            flash(f'Ошибка при сохранении настроек: {str(e)}', 'error')
-    
-    return render_template('settings/notifications.html', 
-                         username=current_user.fullName,
-                         current_user_obj=current_user)
-    
-
 # Маршрут: Системная информация
 @app.route('/system-info')
 @login_required
