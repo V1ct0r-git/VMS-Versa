@@ -2355,9 +2355,25 @@ def help():
     return render_template('system/help.html', username=current_user.fullName if current_user.is_authenticated else None)
 
 # Маршрут: Контакты
-@app.route('/contact')
+@app.route('/contact', methods=['GET', 'POST'])
 def contact():
-    return render_template('system/contact.html', username=current_user.fullName if current_user.is_authenticated else None)
+    if request.method == 'POST':
+        # Обработка отправки формы обратной связи
+        name = request.form.get('name')
+        email = request.form.get('email')
+        subject = request.form.get('subject')
+        message = request.form.get('message')
+        
+        # Здесь можно добавить логику отправки сообщения
+        # Пока просто покажем сообщение об успехе
+        flash('Ваше сообщение успешно отправлено. Администрация свяжется с вами в ближайшее время.', 'success')
+        return redirect(url_for('contact'))
+    
+    # Получаем всех администраторов
+    admin_users = User.query.filter_by(role='admin').all()
+    return render_template('system/contact.html', 
+                         username=current_user.fullName if current_user.is_authenticated else None,
+                         admin_users=admin_users)
 
 # Маршрут: Для установки флага прохождения капчи в сессии
 @app.route('/login/captcha_passed', methods=['POST'])

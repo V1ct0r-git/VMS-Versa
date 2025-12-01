@@ -1,1 +1,41 @@
-Nothing to output - the file changes consist only of source files (`.py`, `.html`) and no build artifacts, dependencies, or temp files that need to be ignored.
+```
+# Compiled and build artifacts
+*.pyc
+__pycache__/
+*.o
+*.obj
+
+# Dependencies
+.venv/
+venv/
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Editors
+.vscode/
+.idea/
+
+# Coverage and testing
+.coverage
+coverage/
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+
+# Distribution and build
+dist/
+build/
+target/
+
+# System files
+.DS_Store
+Thumbs.db
+```

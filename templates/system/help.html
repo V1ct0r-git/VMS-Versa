@@ -82,6 +82,18 @@
                 </div>
                 
                 <div class="help-section">
+                    <h2><i class="fas fa-user-shield"></i> Роли пользователей</h2>
+                    <div class="help-item">
+                        <h3>Какие роли существуют в системе?</h3>
+                        <ul>
+                            <li><strong>Администратор:</strong> полный доступ ко всем функциям системы, управление пользователями, настройки, бэкапы</li>
+                            <li><strong>Механик:</strong> работа с ТО и ремонтами, которые назначены ему, обновление статусов</li>
+                            <li><strong>Менеджер:</strong> просмотр и управление автомобилями, планирование ТО, работа с отчетами</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="help-section">
                     <h2><i class="fas fa-question-circle"></i> Часто задаваемые вопросы</h2>
                     <div class="faq">
                         <div class="faq-item">
@@ -106,7 +118,7 @@
                         <i class="fas fa-envelope"></i>
                         Связаться с поддержкой
                     </a>
-                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
                         <i class="fas fa-arrow-left"></i>
                         Назад к дашборду
                     </a>
