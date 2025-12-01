@@ -1,0 +1,282 @@
+/* Стили для страницы помощи */
+.help-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.help-intro {
+    background: var(--light);
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+}
+
+.help-section {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    transition: var(--transition);
+}
+
+.help-section:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.help-section h2 {
+    margin: 0 0 1rem 0;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.help-item {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.help-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.help-item h3 {
+    margin: 0 0 0.75rem 0;
+    color: var(--text);
+}
+
+.help-item ol, .help-item ul {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+}
+
+.help-item li {
+    margin-bottom: 0.25rem;
+}
+
+.faq-item {
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.faq-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.help-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+}
+
+/* Стили для страницы контактов */
+.contact-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.contact-intro {
+    background: var(--light);
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+}
+
+.contact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.contact-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    text-align: center;
+    transition: var(--transition);
+}
+
+.contact-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+}
+
+.contact-card i {
+    font-size: 2rem;
+    color: var(--primary);
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.contact-card h3 {
+    margin: 0 0 1rem 0;
+    color: var(--text);
+}
+
+.admin-list {
+    text-align: left;
+}
+
+.admin-item {
+    background: var(--light);
+    padding: 1rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 0.5rem;
+}
+
+.admin-item:last-child {
+    margin-bottom: 0;
+}
+
+.admin-item h4 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text);
+}
+
+.admin-item p {
+    margin: 0.25rem 0;
+    color: var(--text-light);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Стили для страницы "О системе" */
+.about-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.about-section {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    transition: var(--transition);
+}
+
+.about-section:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.about-section h2 {
+    margin: 0 0 1rem 0;
+    color: var(--primary);
+}
+
+.about-section p {
+    margin: 0.5rem 0;
+    line-height: 1.6;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.feature-card {
+    background: var(--light);
+    padding: 1.5rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    text-align: center;
+    transition: var(--transition);
+}
+
+.feature-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+.feature-card i {
+    font-size: 2rem;
+    color: var(--primary);
+    margin-bottom: 0.75rem;
+    display: block;
+}
+
+.feature-card h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text);
+}
+
+.feature-card p {
+    margin: 0;
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+.about-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+}
+
+.about-list li {
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.about-list i {
+    color: var(--success);
+}
+
+.tech-info {
+    background: var(--light);
+    padding: 1rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+}
+
+.tech-info p {
+    margin: 0.5rem 0;
+}
+
+/* Общие стили для карточек и контейнеров */
+.card {
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.card-title {
+    margin: 0;
+    color: var(--text);
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .help-actions {
+        flex-direction: column;
+    }
+    
+    .contact-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+}
