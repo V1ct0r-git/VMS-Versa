@@ -29,11 +29,15 @@
     display: flex;
     gap: 0.5rem;
     justify-content: center;
+    align-items: center;
+    height: 100%;
 }
 
 .table-actions .btn {
     padding: 0.25rem 0.5rem;
     min-width: auto;
+    vertical-align: middle !important;
+    line-height: 1.5;
 }
 
 /* Пагинация */

@@ -770,9 +770,6 @@ def edit_vehicle(car_id):
         return redirect(url_for('vehicles'))
     
     if request.method == 'POST':
-        brand = request.form['brand']
-        model = request.form['model']
-        year = request.form['year']
         license_plate = request.form['license_plate']
         color = request.form['color']
         mileage = request.form['mileage']
@@ -780,22 +777,13 @@ def edit_vehicle(car_id):
         
         try:
             # Проверка и преобразование числовых значений
-            year_int = int(year)
             mileage_int = int(mileage)
-            
-            # Проверка на отрицательные значения
-            if year_int < 1886:  # Первый автомобиль был создан в 1886 году
-                flash('Год выпуска не может быть меньше 1886', 'error')
-                return render_template('vehicles/edit_vehicle.html', car=car, username=current_user.fullName)
             
             if mileage_int < 0:
                 flash('Пробег не может быть отрицательным', 'error')
                 return render_template('vehicles/edit_vehicle.html', car=car, username=current_user.fullName)
             
             # Обновление данных автомобиля
-            car.brand = brand
-            car.model = model
-            car.year = year_int
             car.licensePlate = license_plate
             car.color = color
             car.mileage = mileage_int
