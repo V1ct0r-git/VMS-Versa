@@ -21,6 +21,7 @@ import atexit
 import base64
 import re
 import requests
+import platform
 
 
 # Настройки Flask
@@ -1904,6 +1905,31 @@ def admin_verify_fullname():
     return render_template('admin/verify_fullname.html', 
                          username=current_user.fullName)
 
+# --- Функция для определения источника данных в зависимости от ОС ---
+def get_fullname_source_url():
+    """Определяет URL для получения ФИО в зависимости от операционной системы."""
+    os_name = platform.system()
+    
+    if os_name == "Windows":
+        # На Windows используем локальный эмулятор
+        return "http://localhost:4444/TransferSimulator/fullName"
+    else:
+        # На Linux (или любой другой ОС) используем внешний сервис.
+        # Сначала пробуем основной URL, если не работает — fallback на эмулятор из документации.
+        primary_url = "http://prb.sylas.ru/TransferSimulator/fullName"
+        fallback_url = "http://prb.sylas.ru/TransferSimulator/"  # Эмулятор для Linux, как в документации
+        
+        # Попробуем основной URL
+        try:
+            response = requests.get(primary_url, timeout=5)
+            if response.status_code == 200:
+                return primary_url
+        except Exception:
+            pass  # Игнорируем ошибку, переходим к fallback
+        
+        # Если основной URL недоступен, используем fallback
+        return fallback_url
+
 # API маршрут для получения данных с внешнего сервера
 @app.route('/api/get-fullname')
 @login_required
@@ -1912,22 +1938,30 @@ def get_fullname():
         return {'error': 'Доступ запрещен'}, 403
     
     try:
-        response = requests.get('http://prb.sylas.ru/TransferSimulator/fullName', timeout=10)
+        # Получаем URL в зависимости от ОС
+        source_url = get_fullname_source_url()
+        
+        # Делаем запрос к выбранному источнику
+        response = requests.get(source_url, timeout=10)
         response.raise_for_status()
         data = response.json()
         
+        full_name_value = data.get('value', '')
+        
         # Добавляем результаты проверки
-        verification_results = verify_fullname(data.get('value', ''))
+        verification_results = verify_fullname(full_name_value)
         
         return {
             'success': True,
-            'data': data,
-            'verification': verification_results
+            'data': data,  # Возвращаем原始 данные от источника
+            'verification': verification_results,
+            'source_used': source_url  # Полезно для отладки
         }
     except Exception as e:
         return {
             'success': False,
-            'error': str(e)
+            'error': str(e),
+            'source_used': get_fullname_source_url()  # Указываем, какой источник пытались использовать
         }, 500
 
 def verify_fullname(full_name):
@@ -2380,15 +2414,15 @@ def captcha_passed():
         if captcha_order == correct_order:
             # Устанавливаем флаг в сессии
             session['captcha_passed'] = True
-            print("DEBUG: captcha_passed set to True via AJAX") # Лог
+            print("DEBUG: captcha_passed set to True via AJAX")
             return {'success': True}, 200
         else:
             # Неправильный порядок, не устанавливаем флаг
-            print("DEBUG: captcha_passed AJAX received wrong order") # Лог
+            print("DEBUG: captcha_passed AJAX received wrong order")
             return {'success': False, 'error': 'Неправильный порядок'}, 400
 
     except Exception as e:
-        print(f"DEBUG: captcha_passed AJAX error: {e}") # Лог
+        print(f"DEBUG: captcha_passed AJAX error: {e}")
         return {'success': False, 'error': 'Внутренняя ошибка сервера'}, 500
 
 
