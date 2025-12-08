@@ -281,11 +281,13 @@
                             <td data-label="Механик">
                                 {{ record.user.fullName if record.user else '—' }}
                             </td>
-                            <td data-label="Действия" class="table-actions">
-                                <a href="{{ url_for('view_maintenance', record_id=record.maintenanceID) }}" 
-                                   class="btn btn-sm btn-outline" title="Просмотреть">
-                                    <i class="fas fa-eye"></i>
-                                </a>
+                            <td data-label="Действия">
+                                <div class="table-actions">
+                                    <a href="{{ url_for('view_maintenance', record_id=record.maintenanceID) }}" 
+                                       class="btn btn-sm btn-outline" title="Просмотреть">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -341,4 +343,5 @@
         </div>
     </div>
 </div>
+
 {% endblock %}
