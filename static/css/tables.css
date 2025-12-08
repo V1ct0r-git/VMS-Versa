@@ -9,6 +9,7 @@
     padding: 0.75rem;
     text-align: left;
     border-bottom: 1px solid var(--border);
+    vertical-align: middle; /* Убедимся, что все ячейки выравнены по центру */
 }
 
 .data-table th {
@@ -33,12 +34,35 @@
     height: 100%;
 }
 
+/* Более специфичные селекторы для ячеек таблицы */
+.data-table td.table-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    padding: 0.75rem;
+    vertical-align: middle !important;
+}
+
 .table-actions .btn {
     padding: 0.25rem 0.5rem;
     min-width: auto;
     vertical-align: middle !important;
     line-height: 1.5;
 }
+
+/* Обеспечиваем корректное выравнивание для кнопок внутри td.table-actions */
+.data-table td.table-actions .btn {
+    vertical-align: middle !important;
+    line-height: 1.5;
+    margin: auto 0; /* Дополнительное выравнивание */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Альтернативный подход: если td.table-actions используется как контейнер */
 
 /* Пагинация */
 .pagination-container {

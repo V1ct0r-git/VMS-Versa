@@ -182,16 +182,7 @@
     color: var(--text-light);
 }
 
-.table-actions {
-    display: flex;
-    gap: 0.5rem;
-    justify-content: center;
-}
 
-.table-actions .btn {
-    padding: 0.25rem 0.5rem;
-    min-width: auto;
-}
 
 /* Общие стили страницы */
 .page-title-section {
