@@ -110,15 +110,17 @@
                             <td data-label="Общая стоимость работ">
                                 {{ "{:,.2f}".format(mechanic.total_earnings) }} ₽
                             </td>
-                            <td data-label="Действия" class="table-actions">
-                                <a href="{{ url_for('view_mechanic', mechanic_id=mechanic.userID) }}" 
-                                   class="btn btn-sm btn-outline" title="Просмотреть">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                <a href="{{ url_for('maintenance_records') }}?user_id={{ mechanic.userID }}" 
-                                   class="btn btn-sm btn-outline" title="ТО">
-                                    <i class="fas fa-wrench"></i>
-                                </a>
+                            <td data-label="Действия">
+                                <div class="table-actions">
+                                    <a href="{{ url_for('view_mechanic', mechanic_id=mechanic.userID) }}" 
+                                       class="btn btn-sm btn-outline" title="Просмотреть">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('maintenance_records') }}?user_id={{ mechanic.userID }}" 
+                                       class="btn btn-sm btn-outline" title="ТО">
+                                        <i class="fas fa-wrench"></i>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -145,5 +147,6 @@ function addMechanic() {
     window.location.href = '/mechanics/add';
 }
 </script>
+
 
 {% endblock %}
