@@ -228,19 +228,21 @@
                             </span>
                         </td>
                         <td data-label="Цвет">{{ car.color or '—' }}</td>
-                        <td data-label="Действия" class="table-actions">
-                            <a href="{{ url_for('vehicle_detail', car_id=car.CarID) }}" 
-                               class="btn btn-sm btn-outline" title="Подробнее">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <a href="{{ url_for('edit_vehicle', car_id=car.CarID) }}" 
-                               class="btn btn-sm btn-outline" title="Редактировать">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <a href="{{ url_for('maintenance_records') }}?car_id={{ car.CarID }}" 
-                               class="btn btn-sm btn-outline" title="ТО">
-                                <i class="fas fa-wrench"></i>
-                            </a>
+                        <td data-label="Действия">
+                            <div class="table-actions">
+                                <a href="{{ url_for('vehicle_detail', car_id=car.CarID) }}" 
+                                   class="btn btn-sm btn-outline" title="Подробнее">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ url_for('edit_vehicle', car_id=car.CarID) }}" 
+                                   class="btn btn-sm btn-outline" title="Редактировать">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{{ url_for('maintenance_records') }}?car_id={{ car.CarID }}" 
+                                   class="btn btn-sm btn-outline" title="ТО">
+                                    <i class="fas fa-wrench"></i>
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -302,4 +304,5 @@ function addVehicle() {
     window.location.href = '/vehicles/add';
 }
 </script>
+
 {% endblock %}
