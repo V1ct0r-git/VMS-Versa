@@ -26,7 +26,7 @@ import platform
 
 # Настройки Flask
 app = Flask(__name__)
-app.secret_key = "21232f297a57a5a743894a0e4a801fc3"
+app.secret_key = secrets.token_hex(32)  # Генерация криптографически стойкого секретного ключа
 
 # заранее закодированная строка с данными для подключения к базе
 encrypted_string = "bXlzcWwrcHlteXNxbDovL1NjaGxlZ2VsOjEwX29TbUAxMzQuOTAuMTY3LjQyOjEwMzA2L3Byb2plY3RfU2NobGVnZWw="
@@ -49,7 +49,7 @@ login_manager.session_protection = "basic"
 
 
 # Настройки куки
-app.config['SESSION_COOKIE_SECURE'] = False
+app.config['SESSION_COOKIE_SECURE'] = True  # Требуется HTTPS для production
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['SESSION_COOKIE_PERMANENT'] = False
@@ -524,36 +524,51 @@ def repairs():
 @login_required
 def add_repair():
     if request.method == 'POST':
-        car_id = int(request.form['car_id'])
-        repair_type = request.form['repair_type']
-        priority = request.form['priority']
-        date = request.form['date'] or None
-        reason = request.form['reason']
-        description = request.form['description']
-        cost = float(request.form['cost']) if request.form['cost'] else 0
-        status = request.form['status']
-        warranty_expiry = request.form['warranty_expiry'] or None
-        service_name = request.form['service_name']
+        try:
+            car_id = int(request.form.get('car_id', 0))
+            if car_id <= 0:
+                flash('Некорректный ID автомобиля', 'error')
+                return redirect(url_for('add_repair'))
+            
+            repair_type = request.form.get('repair_type', '')
+            priority = request.form.get('priority', 'medium')
+            date = request.form.get('date') or None
+            reason = request.form.get('reason', '')
+            description = request.form.get('description', '')
+            cost_str = request.form.get('cost', '0')
+            cost = float(cost_str) if cost_str else 0.0
+            status = request.form.get('status', 'planned')
+            warranty_expiry = request.form.get('warranty_expiry') or None
+            service_name = request.form.get('service_name', '')
 
-        # Создаем новый ремонт
-        repair = Repair(
-            carID=car_id,
-            repairType=repair_type,
-            priority=priority,
-            status=status,
-            warrantyExpiry=warranty_expiry,
-            date=date,
-            reason=reason,
-            description=description,
-            cost=cost,
-            serviceName=service_name
-        )
+            # Создаем новый ремонт
+            repair = Repair(
+                carID=car_id,
+                repairType=repair_type,
+                priority=priority,
+                status=status,
+                warrantyExpiry=warranty_expiry,
+                date=date,
+                reason=reason,
+                description=description,
+                cost=cost,
+                serviceName=service_name
+            )
 
-        db.session.add(repair)
-        db.session.commit()
+            db.session.add(repair)
+            db.session.commit()
 
-        flash('Ремонт успешно добавлен!', 'success')
-        return redirect(url_for('repairs'))
+            flash('Ремонт успешно добавлен!', 'success')
+            return redirect(url_for('repairs'))
+        except ValueError as e:
+            db.session.rollback()
+            flash(f'Ошибка валидации данных: {str(e)}', 'error')
+            return redirect(url_for('add_repair'))
+        except Exception as e:
+            db.session.rollback()
+            flash('Произошла ошибка при добавлении ремонта', 'error')
+            print(f"ERROR: {str(e)}")
+            return redirect(url_for('add_repair'))
 
     # Получаем список автомобилей для формы
     vehicles = Car.query.order_by(Car.brand, Car.model).all()
@@ -577,20 +592,36 @@ def edit_repair(repair_id):
     repair = Repair.query.get_or_404(repair_id)
     
     if request.method == 'POST':
-        repair.carID = int(request.form['car_id'])
-        repair.repairType = request.form['repair_type']
-        repair.priority = request.form['priority']
-        repair.status = request.form['status']
-        repair.warrantyExpiry = request.form['warranty_expiry'] or None
-        repair.date = request.form['date'] or None
-        repair.reason = request.form['reason']
-        repair.description = request.form['description']
-        repair.cost = float(request.form['cost']) if request.form['cost'] else 0
-        repair.serviceName = request.form['service_name']
+        try:
+            car_id = int(request.form.get('car_id', 0))
+            if car_id <= 0:
+                flash('Некорректный ID автомобиля', 'error')
+                return redirect(url_for('edit_repair', repair_id=repair_id))
+            
+            repair.carID = car_id
+            repair.repairType = request.form.get('repair_type', '')
+            repair.priority = request.form.get('priority', 'medium')
+            repair.status = request.form.get('status', 'planned')
+            repair.warrantyExpiry = request.form.get('warranty_expiry') or None
+            repair.date = request.form.get('date') or None
+            repair.reason = request.form.get('reason', '')
+            repair.description = request.form.get('description', '')
+            cost_str = request.form.get('cost', '0')
+            repair.cost = float(cost_str) if cost_str else 0.0
+            repair.serviceName = request.form.get('service_name', '')
 
-        db.session.commit()
-        flash('Ремонт успешно обновлен!', 'success')
-        return redirect(url_for('repairs'))
+            db.session.commit()
+            flash('Ремонт успешно обновлен!', 'success')
+            return redirect(url_for('repairs'))
+        except ValueError as e:
+            db.session.rollback()
+            flash(f'Ошибка валидации данных: {str(e)}', 'error')
+            return redirect(url_for('edit_repair', repair_id=repair_id))
+        except Exception as e:
+            db.session.rollback()
+            flash('Произошла ошибка при обновлении ремонта', 'error')
+            print(f"ERROR: {str(e)}")
+            return redirect(url_for('edit_repair', repair_id=repair_id))
 
     # Получаем список автомобилей для формы
     vehicles = Car.query.order_by(Car.brand, Car.model).all()
