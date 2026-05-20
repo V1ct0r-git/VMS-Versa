@@ -9,93 +9,140 @@
     {% block head %}{% endblock %}
 </head>
 <body>
-    <!-- Навигационная панель -->
+    <!-- Top Navigation Bar -->
     <nav class="navbar">
-        <div class="nav-title">
-            <i class="fas fa-truck"></i>
-            <span>Верса</span>
+        <div class="nav-left">
+            <a href="/" class="nav-logo">
+                <div class="logo-icon">
+                    <i class="fas fa-truck"></i>
+                    <span class="sparkle top-left"></span>
+                    <span class="sparkle top-right"></span>
+                    <span class="sparkle bottom-left"></span>
+                    <span class="sparkle bottom-right"></span>
+                </div>
+                <span class="nav-title">Верса</span>
+            </a>
         </div>
-
-        <div class="nav-links">
-            {% if current_user.role in ['admin', 'manager', 'mechanic'] %}
-            <a href="/dashboard" class="nav-link {{ 'active' if request.path == '/dashboard' else '' }}">
-                <i class="fas fa-tachometer-alt"></i>
-                <span>Дашборд</span>
-            </a>
-            {% endif %}
-
-            {% if current_user.role in ['admin', 'manager', 'mechanic'] %}
-            <a href="/vehicles" class="nav-link {{ 'active' if request.path == '/vehicles' else '' }}">
-                <i class="fas fa-car"></i>
-                <span>Транспорт</span>
-            </a>
-            {% endif %}
-
-            {% if current_user.role in ['admin', 'mechanic'] %}
-            <a href="/maintenance" class="nav-link {{ 'active' if request.path == '/maintenance' else '' }}">
-                <i class="fas fa-wrench"></i>
-                <span>ТО</span>
-            </a>
-            <a href="/repairs" class="nav-link {{ 'active' if request.path == '/repairs' else '' }}">
-                <i class="fas fa-tools"></i>
-                <span>Ремонты</span>
-            </a>
-            <a href="/reminders" class="nav-link {{ 'active' if request.path == '/reminders' else '' }}">
-                <i class="fas fa-bell"></i>
-                <span>Напоминания</span>
-            </a>
-            {% endif %}
-
-            {% if current_user.role in ['admin', 'manager'] %}
-            <a href="/mechanics" class="nav-link {{ 'active' if request.path == '/mechanics' else '' }}">
-                <i class="fas fa-tools"></i>
-                <span>Механики</span>
-            </a>
-            <a href="/reports" class="nav-link {{ 'active' if request.path == '/reports' else '' }}">
-                <i class="fas fa-chart-bar"></i>
-                <span>Отчеты</span>
-            </a>
-            {% endif %}
-
-            {% if current_user.role == 'admin' %}
-            <a href="/admin" class="nav-link {{ 'active' if request.path == '/admin' else '' }}">
-                <i class="fas fa-user-shield"></i>
-                <span>Администрирование</span>
-            </a>
-            {% endif %}
-        </div>
-
+        
         <div class="user-info">
             {% if current_user.is_authenticated %}
             <div class="user-profile">
                 <div class="user-avatar">
                     <i class="fas fa-user"></i>
                 </div>
-                <div class="user-details">
-                    <span class="username">{{ current_user.fullName }}</span>
-                    <span class="user-role">{{ current_user.role }}</span>
-                </div>
-                <div class="user-dropdown">
-                    <a href="{{ url_for('settings') }}" class="dropdown-item">
-                        <i class="fas fa-cog"></i>
-                        Настройки
-                    </a>
-                    <a href="{{ url_for('logout') }}" class="logout-btn">
-                        <i class="fas fa-sign-out-alt"></i>
-                        Выйти
-                    </a>
-                </div>
+                <span class="username">{{ current_user.fullName }}</span>
             </div>
+            {% endif %}
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Side Drawer Overlay -->
+    <div class="side-drawer-overlay" id="drawerOverlay"></div>
+
+    <!-- Side Drawer -->
+    <div class="side-drawer" id="sideDrawer">
+        <div class="drawer-header">
+            <span class="drawer-title">Меню</span>
+            <button class="drawer-close" id="drawerClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="drawer-content">
+            <nav class="drawer-nav">
+                {% if current_user.role in ['admin', 'manager', 'mechanic'] %}
+                <a href="/dashboard" class="drawer-link {{ 'active' if request.path == '/dashboard' else '' }}">
+                    <div class="drawer-link-icon blue">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <span class="drawer-link-text">Дашборд</span>
+                </a>
+                {% endif %}
+
+                {% if current_user.role in ['admin', 'manager', 'mechanic'] %}
+                <a href="/vehicles" class="drawer-link {{ 'active' if request.path == '/vehicles' else '' }}">
+                    <div class="drawer-link-icon green">
+                        <i class="fas fa-car"></i>
+                    </div>
+                    <span class="drawer-link-text">Транспорт</span>
+                </a>
+                {% endif %}
+
+                {% if current_user.role in ['admin', 'mechanic'] %}
+                <a href="/maintenance" class="drawer-link {{ 'active' if request.path == '/maintenance' else '' }}">
+                    <div class="drawer-link-icon orange">
+                        <i class="fas fa-wrench"></i>
+                    </div>
+                    <span class="drawer-link-text">ТО</span>
+                </a>
+                <a href="/repairs" class="drawer-link {{ 'active' if request.path == '/repairs' else '' }}">
+                    <div class="drawer-link-icon red">
+                        <i class="fas fa-tools"></i>
+                    </div>
+                    <span class="drawer-link-text">Ремонты</span>
+                </a>
+                <a href="/reminders" class="drawer-link {{ 'active' if request.path == '/reminders' else '' }}">
+                    <div class="drawer-link-icon purple">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <span class="drawer-link-text">Напоминания</span>
+                </a>
+                {% endif %}
+
+                {% if current_user.role in ['admin', 'manager'] %}
+                <a href="/mechanics" class="drawer-link {{ 'active' if request.path == '/mechanics' else '' }}">
+                    <div class="drawer-link-icon blue">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <span class="drawer-link-text">Механики</span>
+                </a>
+                <a href="/reports" class="drawer-link {{ 'active' if request.path == '/reports' else '' }}">
+                    <div class="drawer-link-icon green">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <span class="drawer-link-text">Отчеты</span>
+                </a>
+                {% endif %}
+
+                {% if current_user.role == 'admin' %}
+                <a href="/admin" class="drawer-link {{ 'active' if request.path == '/admin' else '' }}">
+                    <div class="drawer-link-icon red">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <span class="drawer-link-text">Администрирование</span>
+                </a>
+                {% endif %}
+                
+                {% if current_user.is_authenticated %}
+                <a href="/settings" class="drawer-link {{ 'active' if request.path == '/settings' else '' }}">
+                    <div class="drawer-link-icon purple">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                    <span class="drawer-link-text">Настройки</span>
+                </a>
+                {% endif %}
+            </nav>
+        </div>
+        
+        <div class="drawer-footer">
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('logout') }}" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                Выйти
+            </a>
             {% else %}
-            <a href="{{ url_for('login') }}" class="btn btn-primary">
+            <a href="{{ url_for('login') }}" class="btn btn-primary" style="width: 100%;">
                 <i class="fas fa-sign-in-alt"></i>
                 Войти
             </a>
             {% endif %}
         </div>
-    </nav>
+    </div>
 
-    <!-- Flash-сообщения (включая SQL-ошибки) -->
+    <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             <div class="flash-messages-container">
@@ -109,51 +156,71 @@
         {% endif %}
     {% endwith %}
 
-    <!-- Основное содержимое -->
-    <main>
-        {% block content %}{% endblock %}
-    </main>
-
-    <!-- Футер -->
-    <footer>
-        <div class="footer-content">
-            <div class="footer-info">
-                <div class="footer-logo">
-                    <i class="fas fa-truck"></i>
-                    <span>Верса</span>
+    <!-- Main Content -->
+    <div class="shell">
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+        
+        <!-- Footer -->
+        <footer>
+            <div class="footer-content">
+                <div class="footer-info">
+                    <div class="footer-logo">
+                        <i class="fas fa-truck"></i>
+                        <span>Верса</span>
+                    </div>
+                    <p>Система автоматизации учёта технического обслуживания v{{ system_info.system.version }}</p>
                 </div>
-                <p>Система автоматизации учёта технического обслуживания грузовых автомобилей v{{ system_info.system.version }}</p>
+                <div class="footer-links">
+                    <a href="/about">О системе</a>
+                    <a href="/help">Помощь</a>
+                    <a href="/contact">Контакты</a>
+                    <a href="/system-info">Информация о системе</a>
+                </div>
             </div>
-            <div class="footer-links">
-                <a href="/about">О системе</a>
-                <a href="/help">Помощь</a>
-                <a href="/contact">Контакты</a>
-                <a href="/system-info">Информация о системе</a>
+            <div class="footer-bottom">
+                <p>&copy; 2025 {{ system_info.system.company }}. Все права защищены.</p>
             </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2025 {{ system_info.system.company }}. Все права защищены. v{{ system_info.system.version }}</p>
-        </div>
-    </footer>
+        </footer>
+    </div>
 
-    <!-- Скрипты -->
+    <!-- Scripts -->
     <script>
-        // Анимация наведения для пользовательского меню
         document.addEventListener('DOMContentLoaded', function() {
-            const userProfile = document.querySelector('.user-profile');
-            if (userProfile) {
-                userProfile.addEventListener('click', function() {
-                    this.classList.toggle('active');
+            const menuToggle = document.getElementById('menuToggle');
+            const sideDrawer = document.getElementById('sideDrawer');
+            const drawerOverlay = document.getElementById('drawerOverlay');
+            const drawerClose = document.getElementById('drawerClose');
+            
+            // Open drawer
+            if (menuToggle) {
+                menuToggle.addEventListener('click', function() {
+                    sideDrawer.classList.add('active');
+                    drawerOverlay.classList.add('active');
+                    document.body.style.overflow = 'hidden';
                 });
             }
-
-            // Закрытие dropdown при клике вне его
-            document.addEventListener('click', function(e) {
-                if (!e.target.closest('.user-profile')) {
-                    const activeDropdown = document.querySelector('.user-profile.active');
-                    if (activeDropdown) {
-                        activeDropdown.classList.remove('active');
-                    }
+            
+            // Close drawer
+            function closeDrawer() {
+                sideDrawer.classList.remove('active');
+                drawerOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+            
+            if (drawerClose) {
+                drawerClose.addEventListener('click', closeDrawer);
+            }
+            
+            if (drawerOverlay) {
+                drawerOverlay.addEventListener('click', closeDrawer);
+            }
+            
+            // Close on escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeDrawer();
                 }
             });
         });

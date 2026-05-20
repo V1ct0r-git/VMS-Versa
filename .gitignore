@@ -1,27 +1,19 @@
+```
 # Compiled and build artifacts
 *.pyc
 __pycache__/
 *.o
 *.obj
-*.class
-*.exe
-*.dll
-*.so
-*.a
-*.out
+dist/
+build/
+target/
 
 # Dependencies
 .venv/
 venv/
 node_modules/
-dist/
-build/
-target/
-.mypy_cache/
-.pytest_cache/
-.coverage
-coverage/
-htmlcov/
+.julia/
+.zig-cache/
 
 # Logs and temp files
 *.log
@@ -40,30 +32,20 @@ htmlcov/
 *.swp
 *.swo
 
-# System files
+# Coverage reports
+coverage/
+htmlcov/
+.coverage
+
+# OS generated files
 .DS_Store
 Thumbs.db
 
-# Archives
-*.zip
-*.gz
-*.tar
-*.tgz
-*.bz2
-*.xz
-*.7z
-*.rar
-*.zst
-*.lz4
-*.lzh
-*.cab
-*.arj
-*.rpm
-*.deb
-*.Z
-*.lz
-*.lzo
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.tar.zst
+# Package manager caches
+.npm/
+.yarn/
+.pip/
+.mypy_cache/
+.pytest_cache/
+.gradle/
+```

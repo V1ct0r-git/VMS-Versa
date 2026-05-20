@@ -11,50 +11,78 @@
     <!-- Приветствие -->
     <div class="page-header">
         <div class="welcome-section">
-            <h1 class="card-title">Добро пожаловать, {{ username }}!</h1>
+            <h1>Добро пожаловать, <span class="text-gradient">{{ username }}</span>!</h1>
             <p class="page-subtitle">Текущее состояние системы управления автопарком</p>
-        </div>
-        <div class="dashboard-actions">
-
         </div>
     </div>
 
     <!-- Основная статистика -->
     <div class="stats-container">
         <div class="stat-card">
-            <div class="stat-icon">
+            <div class="stat-icon gradient-blue">
                 <i class="fas fa-car"></i>
             </div>
             <div class="stat-content">
                 <div class="stat-value">{{ stats.total_cars }}</div>
                 <div class="stat-label">Всего автомобилей</div>
             </div>
+            <div class="sparkline">
+                <div class="sparkline-bar" style="height: 40%;"></div>
+                <div class="sparkline-bar" style="height: 60%;"></div>
+                <div class="sparkline-bar" style="height: 50%;"></div>
+                <div class="sparkline-bar" style="height: 70%;"></div>
+                <div class="sparkline-bar" style="height: 80%;"></div>
+            </div>
         </div>
+        
         <div class="stat-card">
-            <div class="stat-icon">
+            <div class="stat-icon gradient-green">
                 <i class="fas fa-play-circle"></i>
             </div>
             <div class="stat-content">
                 <div class="stat-value">{{ stats.active_cars }}</div>
                 <div class="stat-label">Активные</div>
             </div>
+            <div class="sparkline">
+                <div class="sparkline-bar" style="height: 50%;"></div>
+                <div class="sparkline-bar" style="height: 70%;"></div>
+                <div class="sparkline-bar" style="height: 60%;"></div>
+                <div class="sparkline-bar" style="height: 80%;"></div>
+                <div class="sparkline-bar" style="height: 90%;"></div>
+            </div>
         </div>
+        
         <div class="stat-card">
-            <div class="stat-icon">
+            <div class="stat-icon gradient-orange">
                 <i class="fas fa-wrench"></i>
             </div>
             <div class="stat-content">
                 <div class="stat-value">{{ stats.maintenance_cars }}</div>
                 <div class="stat-label">На ТО</div>
             </div>
+            <div class="sparkline">
+                <div class="sparkline-bar" style="height: 30%;"></div>
+                <div class="sparkline-bar" style="height: 40%;"></div>
+                <div class="sparkline-bar" style="height: 35%;"></div>
+                <div class="sparkline-bar" style="height: 50%;"></div>
+                <div class="sparkline-bar" style="height: 45%;"></div>
+            </div>
         </div>
+        
         <div class="stat-card">
-            <div class="stat-icon">
+            <div class="stat-icon gradient-red">
                 <i class="fas fa-file-archive"></i>
             </div>
             <div class="stat-content">
                 <div class="stat-value">{{ stats.retired_cars }}</div>
                 <div class="stat-label">Списаны</div>
+            </div>
+            <div class="sparkline">
+                <div class="sparkline-bar" style="height: 20%;"></div>
+                <div class="sparkline-bar" style="height: 25%;"></div>
+                <div class="sparkline-bar" style="height: 30%;"></div>
+                <div class="sparkline-bar" style="height: 28%;"></div>
+                <div class="sparkline-bar" style="height: 35%;"></div>
             </div>
         </div>
     </div>
@@ -62,25 +90,37 @@
     <!-- Второй ряд статистики -->
     <div class="stats-container">
         <div class="stat-card">
-            <div class="stat-icon">
+            <div class="stat-icon gradient-blue">
                 <i class="fas fa-calendar-alt"></i>
             </div>
             <div class="stat-content">
                 <div class="stat-value">{{ stats.upcoming_maintenance }}</div>
                 <div class="stat-label">Предстоящие ТО (≤30 дней)</div>
+                <div class="trend-pill trend-up">
+                    <i class="fas fa-arrow-up"></i>
+                    Скоро
+                </div>
             </div>
         </div>
+        
         <div class="stat-card">
-            <div class="stat-icon">
+            <div class="stat-icon gradient-red">
                 <i class="fas fa-exclamation-triangle"></i>
             </div>
             <div class="stat-content">
                 <div class="stat-value">{{ stats.overdue_maintenance }}</div>
                 <div class="stat-label">Просроченные ТО</div>
+                {% if stats.overdue_maintenance > 0 %}
+                <div class="trend-pill trend-down">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Внимание
+                </div>
+                {% endif %}
             </div>
         </div>
+        
         <div class="stat-card">
-            <div class="stat-icon">
+            <div class="stat-icon gradient-orange">
                 <i class="fas fa-tasks"></i>
             </div>
             <div class="stat-content">
@@ -88,8 +128,9 @@
                 <div class="stat-label">Высокий приоритет</div>
             </div>
         </div>
+        
         <div class="stat-card">
-            <div class="stat-icon">
+            <div class="stat-icon gradient-green">
                 <i class="fas fa-money-bill-wave"></i>
             </div>
             <div class="stat-content">
