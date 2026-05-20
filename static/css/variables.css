@@ -1,32 +1,47 @@
 :root {
-  /* Цвета */
-  --primary: #0D6EFD;
-  --primary-hover: #0b5ed7;
-  --primary-light: #e7f1ff;
-  --secondary: #6C757D;
-  --success: #28a745;
-  --danger: #dc3545;
-  --warning: #ffc107;
-  --info: #17a2b8;
-  --light: #F8F9FA;
-  --dark: #343a40;
-  --white: #fff;
-  --text: #212529;
-  --text-light: #6C757D;
-  --text-color: #212529; /* Для сортировки */
-  --primary-color: #0D6EFD; /* Для сортировки */
-  --bg: #F5F5F5;
-  --border: #E9ECEF;
+  /* Versa White Design System - Apple HIG inspired */
   
-  /* Тени */
-  --shadow: 0 2px 4px rgba(0,0,0,0.1);
-  --shadow-lg: 0 4px 12px rgba(0,0,0,0.1);
+  /* Colors */
+  --bg-main: #ffffff;
+  --bg-subtle: #f7f7f5;
+  --text-primary: #1c1c1e;
+  --text-secondary: #6e6e73;
+  --accent: #007aff;
+  --accent-hover: #0062cc;
+  --success: #34c759;
+  --danger: #ff3b30;
+  --warning: #ff9500;
+  --info: #5ac8fa;
   
-  /* Радиусы */
-  --radius: 8px;
-  --radius-sm: 4px;
-  --radius-lg: 12px;
+  /* Borders */
+  --border-light: rgba(0, 0, 0, 0.08);
+  --border-medium: rgba(0, 0, 0, 0.12);
   
-  /* Анимации */
-  --transition: all 0.3s ease;
+  /* Shadows - Outer for raised elements */
+  --shadow-outer: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.04);
+  --shadow-outer-hover: 0 2px 6px rgba(0, 0, 0, 0.06), 0 8px 20px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.08), 0 12px 32px rgba(0, 0, 0, 0.08);
+  
+  /* Shadows - Inset for depth */
+  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 1);
+  --shadow-inset-strong: inset 0 2px 4px rgba(0, 0, 0, 0.04);
+  
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+  
+  /* Transitions */
+  --transition-fast: cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s;
+  --transition-normal: cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s;
+  --transition-slow: cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.4s;
+  
+  /* Gradients */
+  --gradient-accent: linear-gradient(135deg, #007aff 0%, #5856d6 100%);
+  --gradient-success: linear-gradient(135deg, #34c759 0%, #30b350 100%);
+  --gradient-danger: linear-gradient(135deg, #ff3b30 0%, #ff453a 100%);
+  --gradient-warning: linear-gradient(135deg, #ff9500 0%, #ff8c00 100%);
+  --gradient-avatar: linear-gradient(135deg, #007aff 0%, #5ac8fa 100%);
 }
