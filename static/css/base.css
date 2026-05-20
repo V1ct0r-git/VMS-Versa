@@ -126,21 +126,24 @@ h4 { font-size: 1rem; }
 /* Stats Grid */
 .stats-container {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin-bottom: 2rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
   padding: 0 1.5rem;
 }
 
 .stat-card {
-  background: var(--bg-main);
+  background: var(--bg-card);
   border-radius: var(--radius-lg);
-  padding: 1.5rem;
+  padding: 1rem;
   box-shadow: var(--shadow-outer), var(--shadow-inset);
   border: 1px solid var(--border-light);
   transition: var(--transition-normal);
   position: relative;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .stat-card:hover {
@@ -149,16 +152,16 @@ h4 { font-size: 1rem; }
 }
 
 .stat-icon {
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 1.25rem;
-  margin-bottom: 1rem;
+  font-size: 1.125rem;
   box-shadow: var(--shadow-inset-strong);
+  flex-shrink: 0;
 }
 
 .stat-icon.gradient-blue { background: var(--gradient-accent); }
@@ -166,18 +169,27 @@ h4 { font-size: 1rem; }
 .stat-icon.gradient-orange { background: var(--gradient-warning); }
 .stat-icon.gradient-red { background: var(--gradient-danger); }
 
+.stat-content {
+  flex: 1;
+  min-width: 0;
+}
+
 .stat-value {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 800;
   color: var(--text-primary);
   letter-spacing: -0.03em;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.125rem;
+  line-height: 1;
 }
 
 .stat-label {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
   font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Trend Pills */
@@ -578,9 +590,15 @@ footer {
 }
 
 /* Responsive adjustments */
+@media screen and (max-width: 1200px) {
+  .stats-container {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
 @media screen and (max-width: 900px) {
   .stats-container {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
   
   .dashboard-grid {
@@ -602,7 +620,7 @@ footer {
 
 @media screen and (max-width: 600px) {
   .stats-container {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
   
   .shell {

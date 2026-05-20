@@ -70,9 +70,15 @@
     <div class="card">
         <div class="card-header">
             <h3 class="card-title"><i class="fas fa-filter"></i> Фильтры</h3>
+            <button type="button" class="filter-toggle-btn" onclick="toggleFilterForm()">
+                <i class="fas fa-chevron-up" id="filterToggleIcon"></i>
+            </button>
         </div>
-        <div class="card-body">
+        <div class="card-body" id="filterFormContainer">
             <form method="GET" class="filter-form">
+                <div class="filter-header">
+                    <span class="filter-title"><i class="fas fa-sliders-h"></i> Параметры фильтрации</span>
+                </div>
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="form-label">Автомобиль</label>
@@ -148,6 +154,20 @@
             </form>
         </div>
     </div>
+
+    <script>
+    function toggleFilterForm() {
+        var container = document.getElementById('filterFormContainer');
+        var icon = document.getElementById('filterToggleIcon');
+        if (container.style.display === 'none') {
+            container.style.display = 'block';
+            icon.className = 'fas fa-chevron-up';
+        } else {
+            container.style.display = 'none';
+            icon.className = 'fas fa-chevron-down';
+        }
+    }
+    </script>
 
     {% if filtered_vehicle %}
     <div class="alert alert-info">
