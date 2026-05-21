@@ -122,9 +122,6 @@
     <footer>
         <div class="footer-content">
             <div class="footer-info">
-                <div class="footer-logo">
-                    <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Верса" class="footer-logo-img">
-                </div>
                 <p>Система автоматизации учёта технического обслуживания грузовых автомобилей v{{ system_info.system.version }}</p>
             </div>
             <div class="footer-links">
@@ -133,9 +130,6 @@
                 <a href="/contact">Контакты</a>
                 <a href="/system-info">Информация о системе</a>
             </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2025 {{ system_info.system.company }}. Все права защищены. v{{ system_info.system.version }}</p>
         </div>
     </footer>
 

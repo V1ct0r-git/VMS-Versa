@@ -60,10 +60,6 @@
                     <label>Количество попыток входа:</label>
                     <span>{{ user.loginAttempts or 0 }}</span>
                 </div>
-                <div class="info-item">
-                    <label>Дата регистрации:</label>
-                    <span>{{ user.passwordDate.strftime('%d.%m.%Y %H:%M') if user.passwordDate else '—' }}</span>
-                </div>
                 {% if user.blockedUntil %}
                 <div class="info-item">
                     <label>Блокировка до:</label>
