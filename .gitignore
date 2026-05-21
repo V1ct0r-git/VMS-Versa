@@ -6,9 +6,9 @@ __pycache__/
 dist/
 build/
 *.class
-*.exe
-*.dll
 *.so
+*.dll
+*.exe
 *.a
 *.out
 

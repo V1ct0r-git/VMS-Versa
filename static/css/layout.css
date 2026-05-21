@@ -25,6 +25,12 @@
     gap: 0.5rem;
 }
 
+.nav-logo {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
+}
+
 .nav-toggle-btn {
     background: none;
     border: none;
@@ -216,9 +222,10 @@
     gap: 0.5rem;
 }
 
-.footer-logo i {
-    font-size: 1.5rem;
-    color: var(--primary);
+.footer-logo-img {
+    height: 50px;
+    width: auto;
+    object-fit: contain;
 }
 
 .footer-links {

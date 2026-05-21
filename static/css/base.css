@@ -125,3 +125,24 @@ h1, h2, h3, h4, h5, h6 {
     display: block;
 }
 
+.no-data-logo {
+    height: 80px;
+    width: auto;
+    object-fit: contain;
+    margin-bottom: 1rem;
+}
+
+/* Стили для логотипа */
+.page-logo,
+.menu-logo {
+    height: 30px;
+    width: auto;
+    object-fit: contain;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+}
+
+.card-title .page-logo {
+    height: 35px;
+}
+

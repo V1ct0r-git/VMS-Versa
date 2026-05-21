@@ -40,7 +40,7 @@
                     <span>Затраты за период</span>
                 </a>
                 <a href="{{ url_for('report_fleet_summary') }}" class="settings-menu-item {% if active_report == 'fleet_summary' %}active{% endif %}">
-                    <i class="fas fa-truck"></i>
+                    <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Верса" class="menu-logo">
                     <span>Сводка по автопарку</span>
                 </a>
                 <!-- Добавь другие отчёты по мере реализации -->
