@@ -24,11 +24,13 @@ import requests
 import platform
 
 
+# === КОНФИГУРАЦИЯ ПРИЛОЖЕНИЯ ===
+
 # Настройки Flask
 app = Flask(__name__)
-app.secret_key = secrets.token_hex(32)  # Генерация криптографически стойкого секретного ключа
+app.secret_key = secrets.token_hex(32)
 
-# заранее закодированная строка с данными для подключения к базе
+# Строка подключения к БД (base64)
 encrypted_string = "bXlzcWwrcHlteXNxbDovL1NjaGxlZ2VsOjEwX29TbUAxMzQuOTAuMTY3LjQyOjEwMzA2L3Byb2plY3RfU2NobGVnZWw="
 connection_string = base64.b64decode(encrypted_string).decode()
 
@@ -36,41 +38,33 @@ connection_string = base64.b64decode(encrypted_string).decode()
 app.config['SQLALCHEMY_DATABASE_URI'] = connection_string
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-
 # Инициализация SQLAlchemy
 db.init_app(app)
 
-
-# Настройки Flask login
+# Настройки Flask-Login
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 login_manager.session_protection = "basic"
 
-
-# Настройки куки
-app.config['SESSION_COOKIE_SECURE'] = True  # Требуется HTTPS для production
+# Настройки сессий
+app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['SESSION_COOKIE_PERMANENT'] = False
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
 
-
-# Указываем путь к папке backup
+# Пути к файлам бэкапов
 BACKUP_DIR = os.path.join(app.root_path, 'backup')
-
-# Указываем путь к списку избранных бэкапов
 FAVORITES_FILE = os.path.join(BACKUP_DIR, 'favorites.json')
 
 
+# === ФУНКЦИИ ===
 
-# Функции
-
-# Создаёт напоминания для ТО, у которых их ещё нет
 def create_daily_reminders():
+    """Создаёт напоминания для ТО, у которых их ещё нет."""
     try:
-        with app.app_context():  # ← Обязательно в контексте приложения
-            # Настройки: за сколько дней создавать напоминания
+        with app.app_context():
             PRIORITY_REMINDER_DAYS = {
                 'critical': 14,
                 'high': 7,
@@ -78,10 +72,8 @@ def create_daily_reminders():
                 'low': 1
             }
             
-            # Получаем текущую дату
             today = date.today()
             
-            # Находим все ТО, которые не завершены и не отменены
             active_maintenance = Maintenance.query.filter(
                 Maintenance.status != 'completed',
                 Maintenance.status != 'cancelled'
@@ -89,32 +81,27 @@ def create_daily_reminders():
             
             created_count = 0
             for maintenance in active_maintenance:
-                # Проверяем, существует ли уже напоминание для этого ТО
                 existing_reminder = Reminder.query.filter_by(
                     maintenanceID=maintenance.maintenanceID
                 ).first()
                 
                 if not existing_reminder:
-                    # Рассчитываем дату напоминания
                     reminder_days = PRIORITY_REMINDER_DAYS.get(maintenance.priority, 1)
                     reminder_date = maintenance.startDate - timedelta(days=reminder_days)
                     
-                    # Убедимся, что дата напоминания не раньше, чем завтра
                     tomorrow = today + timedelta(days=1)
                     if reminder_date < tomorrow:
                         reminder_date = tomorrow
                     
-                    # Генерируем сообщение
-                    car = maintenance.car  # ← Автомобиль получаем через отношение
+                    car = maintenance.car
                     message = f"ТО '{maintenance.maintenance_type.name}' для {car.brand} {car.model} ({car.licensePlate}) запланировано на {maintenance.startDate.strftime('%d.%m.%Y')}, приоритет: {maintenance.priority}"
                     
-                    # Создаём новое напоминание (только существующие поля!)
                     new_reminder = Reminder(
                         maintenanceID=maintenance.maintenanceID,
                         message=message,
-                        priority=maintenance.priority,  # ← Приоритет как в ТО
+                        priority=maintenance.priority,
                         remindDate=reminder_date,
-                        isRead='false'  # ← Только 'true' или 'false' как строки
+                        isRead='false'
                     )
                     
                     db.session.add(new_reminder)
@@ -127,13 +114,13 @@ def create_daily_reminders():
                 print("DEBUG: Напоминаний не создано")
                 
     except Exception as e:
-        with app.app_context():  # ← Контекст и для rollback
+        with app.app_context():
             db.session.rollback()
         print(f"ERROR: Ошибка при создании напоминаний: {str(e)}")
 
 
-# Извлекает настройки БД из SQLALCHEMY_DATABASE_URI для бэкапирования
 def get_db_config():
+    """Извлекает настройки БД из SQLALCHEMY_DATABASE_URI для бэкапирования."""
     uri = app.config['SQLALCHEMY_DATABASE_URI']
     parsed = urlparse(uri)
     return {
@@ -141,14 +128,13 @@ def get_db_config():
         'password': parsed.password,
         'host': parsed.hostname,
         'port': parsed.port or 3306,
-        'database': parsed.path.lstrip('/')  # Убираем начальный '/'
+        'database': parsed.path.lstrip('/')
     }
 
 
-# Избранное для бэкапов
 def load_favorites():
+    """Загружает список избранных бэкапов."""
     if not os.path.exists(FAVORITES_FILE):
-        # Создаём файл с пустым списком
         with open(FAVORITES_FILE, 'w') as f:
             json.dump({"favorites": []}, f)
         return set()
@@ -158,12 +144,12 @@ def load_favorites():
             data = json.load(f)
             return set(data.get('favorites', []))
     except (json.JSONDecodeError, FileNotFoundError, IOError):
-        # Если файл повреждён — создаём заново
         with open(FAVORITES_FILE, 'w') as f:
             json.dump({"favorites": []}, f)
         return set()
 
 def save_favorites(favorites):
+    """Сохраняет список избранных бэкапов."""
     try:
         with open(FAVORITES_FILE, 'w', encoding='utf-8') as f:
             json.dump({"favorites": list(favorites)}, f, indent=2, ensure_ascii=False)
@@ -171,18 +157,18 @@ def save_favorites(favorites):
         print(f"Ошибка при сохранении избранного: {e}")
 
 def is_auto_backup_created_today():
-    """
-    Проверяет, был ли создан автоматический бэкап сегодня.
-    """
+    """Проверяет, был ли создан автоматический бэкап сегодня."""
     today = datetime.now().date()
     backup_pattern = os.path.join(BACKUP_DIR, f"auto_backup_{today.strftime('%Y%m%d')}_*.sql")
     today_auto_backups = glob.glob(backup_pattern)
     return len(today_auto_backups) > 0
 
 def is_favorite(filename):
+    """Проверяет, является ли файл избранным."""
     return filename in load_favorites()
 
 def toggle_favorite(filename):
+    """Переключает статус избранного для файла."""
     favorites = load_favorites()
     if filename in favorites:
         favorites.remove(filename)
@@ -190,12 +176,8 @@ def toggle_favorite(filename):
         favorites.add(filename)
     save_favorites(favorites)
 
-# Функция для обеспечения ежедневного автоматического бэкапа
 def ensure_daily_auto_backup():
-    """
-    Проверяет, был ли создан автоматический бэкап сегодня.
-    Если нет и текущее время >= 8:00, создает его.
-    """
+    """Проверяет и создаёт ежедневный автоматический бэкап (если >= 8:00)."""
     now = datetime.now()
     if now.hour < 8:
         print(f"Время {now.strftime('%H:%M:%S')} — автоматический бэкап не будет создан до 8:00 утра.")
@@ -205,21 +187,15 @@ def ensure_daily_auto_backup():
         print("Автоматический бэкап за сегодня уже был создан. Пропускаем.")
         return
 
-    # Создаем бэкап
     scheduled_backup()
 
-# Функция, вызываемая планировщиком для автоматического бэкапа.
 def scheduled_backup():
-    """
-    Функция, вызываемая планировщиком или вручную для автоматического бэкапа.
-    Создает бэкап только если текущее время >= 8:00.
-    """
+    """Создаёт автоматический бэкап БД (только если >= 8:00)."""
     now = datetime.now()
     if now.hour < 8:
         print(f"Время {now.strftime('%H:%M:%S')} — бэкап не будет создан до 8:00 утра.")
-        return # Выходим, если еще не 8 утра
+        return
 
-    # Проверяем еще раз, не создался ли бэкап с момента начала проверки в get_backup_list
     if is_auto_backup_created_today():
         print("Автоматический бэкап за сегодня уже был создан. Пропускаем.")
         return
@@ -258,26 +234,23 @@ def scheduled_backup():
         traceback.print_exc()
 
 
+# === МАРШРУТЫ ===
 
-# Маршруты
-
-# Перенаправление на страницу входа, при заходе на главную страницу
 @app.route('/')
 def index():
+    """Перенаправление на страницу входа."""
     return redirect(url_for('login'))
 
 
-# Маршрут: информационная панель
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    # Статистика по автомобилям
+    """Информационная панель со статистикой."""
     total_cars = db.session.query(db.func.count(Car.CarID)).scalar()
     active_cars = db.session.query(db.func.count(Car.CarID)).filter(Car.status == 'Active').scalar()
     maintenance_cars = db.session.query(db.func.count(Car.CarID)).filter(Car.status == 'Maintenance').scalar()
     retired_cars = db.session.query(db.func.count(Car.CarID)).filter(Car.status == 'Retired').scalar()
 
-    # Предстоящие ТО (в течение 30 дней)
     today = datetime.today().date()
     upcoming_date = today + timedelta(days=30)
     upcoming_maintenance = db.session.query(db.func.count(Car.CarID)).filter(
@@ -285,13 +258,11 @@ def dashboard():
         Car.status == 'Active'
     ).scalar()
 
-    # Просроченные ТО
     overdue_maintenance = db.session.query(db.func.count(Car.CarID)).filter(
         Car.nextMaintenance < today,
         Car.status == 'Active'
     ).scalar()
 
-    # Недавние записи ТО (последние 5) - теперь с ID для перехода
     recent_maintenance = Maintenance.query.options(
         db.joinedload(Maintenance.car),
         db.joinedload(Maintenance.maintenance_type),
@@ -310,7 +281,6 @@ def dashboard():
             'maintenance_id': m.maintenanceID
         })
 
-    # Последние напоминания (по дате создания)
     latest_reminders = Reminder.query.options(
         db.joinedload(Reminder.maintenance).joinedload(Maintenance.car)
     ).order_by(Reminder.createdAt.desc()).limit(5).all()
@@ -326,7 +296,6 @@ def dashboard():
             'createdAt': r.createdAt 
         })
 
-    # Статистика по приоритетам ТО
     high_priority = db.session.query(db.func.count(Maintenance.maintenanceID)).filter(Maintenance.priority == 'high').scalar()
     medium_priority = db.session.query(db.func.count(Maintenance.maintenanceID)).filter(Maintenance.priority == 'medium').scalar()
     low_priority = db.session.query(db.func.count(Maintenance.maintenanceID)).filter(Maintenance.priority == 'low').scalar()
@@ -352,31 +321,26 @@ def dashboard():
                          latest_reminders=latest_reminders_list)
 
 
-# Маршрут: Ремонт
 @app.route('/repairs')
 @login_required
 def repairs():
-    # Получаем параметры фильтрации
+    """Список ремонтов с фильтрацией, сортировкой и пагинацией."""
     car_id = request.args.get('car_id', '')
     status = request.args.get('status', '')
     type_filter = request.args.get('type', '')
     date_from = request.args.get('date_from', '')
     date_to = request.args.get('date_to', '')
     
-    # Параметры сортировки
     sort_by = request.args.get('sort_by', 'date')
     sort_order = request.args.get('sort_order', 'desc')
     
-    # Пагинация
     page = int(request.args.get('page', 1))
     per_page = 10
 
-    # Формируем запрос
     query = Repair.query.options(
         db.joinedload(Repair.car)
     )
     
-    # Фильтры
     if car_id:
         query = query.filter(Repair.carID == int(car_id))
     
@@ -2566,23 +2530,20 @@ def logout():
     return redirect(url_for('login'))
 
 
+# === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ И НАСТРОЙКИ ===
 
-# Допы
-
-# добавление встроенных функций Python min и max в глобальную область видимости шаблонов Jinja2
 app.jinja_env.globals.update(min=min, max=max)
 
 
-# Глобальная переменная для доступа к информации о системе из любого шаблона
 @app.context_processor
 def inject_system_info():
-
+    """Добавляет информацию о системе в контекст шаблонов."""
     return dict(system_info=get_system_info())
 
 
-# Загрузка выгрузка пользователя из системы для Flask-Login
 @login_manager.user_loader
 def load_user(user_id):
+    """Загрузка пользователя для Flask-Login."""
     try:
         user = User.query.filter_by(userID=int(user_id)).first()
         if user:
@@ -2593,11 +2554,9 @@ def load_user(user_id):
         return None
 
 
-
-# Планировщик для всех задач
+# Планировщик задач
 scheduler = BackgroundScheduler()
 
-# Задача: ежедневный бэкап в 8:00
 scheduler.add_job(
     func=scheduled_backup,
     trigger=CronTrigger(hour=8, minute=0),
@@ -2606,7 +2565,6 @@ scheduler.add_job(
     replace_existing=True
 )
 
-# Задача: ежедневные напоминания в 8:05
 scheduler.add_job(
     func=create_daily_reminders,
     trigger=CronTrigger(hour=8, minute=5),
@@ -2617,15 +2575,12 @@ scheduler.add_job(
 
 scheduler.start()
 
-# Проверка пропущенных задач при запуске (для бэкапа и напоминаний)
+# Проверка пропущенных задач при запуске
 ensure_daily_auto_backup()
 create_daily_reminders()
 
-# Убедимся, что планировщик останавливается при завершении приложения
 atexit.register(lambda: scheduler.shutdown())
 
 
-
-# Запрет запуска в качестве модуля, только напрямую
 if __name__ == '__main__':
     app.run(debug=True)
