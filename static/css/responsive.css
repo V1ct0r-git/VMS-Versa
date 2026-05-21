@@ -78,9 +78,27 @@
   
   /* Навигация */
   .navbar {
-    flex-direction: column;
-    padding: 1rem;
-    gap: 1rem;
+    flex-direction: row;
+    padding: 0.5rem 1rem;
+    gap: 0.5rem;
+    flex-wrap: nowrap;
+    height: 50px;
+  }
+
+  .nav-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .nav-logo {
+    height: 32px;
+    width: auto;
+  }
+
+  .nav-toggle-btn {
+    display: flex;
   }
 
   .nav-links {
@@ -94,8 +112,36 @@
     display: none;
   }
 
-  .user-profile .user-details {
-    display: none;
+  .user-info {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+  }
+
+  .user-profile {
+    gap: 0.4rem;
+  }
+
+  .user-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 0.75rem;
+  }
+
+  .user-details {
+    display: flex !important;
+    flex-direction: column;
+    max-width: 80px;
+  }
+
+  .username {
+    font-size: 0.7rem;
+    line-height: 1.1;
+  }
+
+  .user-role {
+    font-size: 0.6rem;
+    line-height: 1.1;
   }
   
   /* Футер */
