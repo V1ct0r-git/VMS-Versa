@@ -40,20 +40,6 @@ TECHNOLOGY_VERSIONS = {
     'requests': '2.31.0'
 }
 
-# Информация о зависимостях
-DEPENDENCIES = [
-    'Flask==2.3.3',
-    'Flask-Login==0.6.3',
-    'Flask-SQLAlchemy==3.0.5',
-    'PyMySQL==1.1.0',
-    'SQLAlchemy==2.0.21',
-    'Werkzeug==2.3.7',
-    'Jinja2==3.1.2',
-    'python-dotenv==1.0.0',
-    'APScheduler==3.10.4',
-    'requests==2.31.0'
-]
-
 # Информация о модулях системы
 MODULES = {
     'vehicles': {
@@ -131,7 +117,6 @@ def get_system_info():
     return {
         'system': SYSTEM_INFO,
         'technology_versions': TECHNOLOGY_VERSIONS,
-        'dependencies': DEPENDENCIES,
         'modules': MODULES,
         'requirements': SYSTEM_REQUIREMENTS,
         'license': LICENSE_INFO
