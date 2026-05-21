@@ -3,6 +3,7 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, login_
 from flask_sqlalchemy import SQLAlchemy
 from models import db, Car, Maintenance, MaintenanceType, Repair, Reminder, User
 import hashlib
+import bcrypt
 from typing import Optional
 import secrets
 import subprocess
@@ -2315,8 +2316,7 @@ def password_settings():
         confirm_password = request.form['confirm_password']
         
         # Проверяем старый пароль
-        old_password_hash = hashlib.md5(old_password.encode('utf-8')).hexdigest()
-        if current_user.passwordHash != old_password_hash:
+        if not bcrypt.checkpw(old_password.encode('utf-8'), current_user.passwordHash.encode('utf-8')):
             flash('Неверный старый пароль!', 'error')
             return render_template('settings/security.html', 
                                  username=current_user.fullName,
@@ -2337,8 +2337,8 @@ def password_settings():
                                  current_user_obj=current_user)
         
         try:
-            # Обновляем пароль
-            current_user.passwordHash = hashlib.md5(new_password.encode('utf-8')).hexdigest()
+            # Обновляем пароль с использованием bcrypt
+            current_user.passwordHash = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
             current_user.passwordDate = datetime.now()
             
             db.session.commit()
@@ -2448,37 +2448,37 @@ def login():
                 return render_template('auth/login.html', captcha_passed=False, parts_order=parts_order) # Путь к шаблону
 
             print("DEBUG: captcha passed, checking login/password")
-            # Проверяем логин и пароль
-            password_hash = hashlib.md5(password.encode('utf-8')).hexdigest()
+            # Проверяем логин и пароль с поддержкой bcrypt и md5 для обратной совместимости
+            user = User.query.filter_by(username=username).first()
+            
+            if user:
+                # Пробуем проверить пароль с bcrypt (новый формат)
+                password_valid = False
+                try:
+                    password_valid = bcrypt.checkpw(password.encode('utf-8'), user.passwordHash.encode('utf-8'))
+                except (ValueError, TypeError):
+                    # Если hash не в формате bcrypt, пробуем md5 (старый формат)
+                    password_hash_md5 = hashlib.md5(password.encode('utf-8')).hexdigest()
+                    password_valid = (user.passwordHash == password_hash_md5)
+                
+                # Проверяем, заблокирован ли пользователь временно
+                blocked_user = user if user.blockedUntil and user.blockedUntil > datetime.now() else None
+                if blocked_user and blocked_user.blockedUntil:
+                    flash(f'Аккаунт заблокирован до {blocked_user.blockedUntil.strftime("%d.%m.%Y %H:%M")}', 'error')
+                    return render_template('auth/login.html', captcha_passed=True, parts_order=parts_order)
 
-            # Проверяем, заблокирован ли пользователь временно
-            blocked_user = User.query.filter(
-                User.username == username,
-                User.blockedUntil > datetime.now()
-            ).first()
-            if blocked_user and blocked_user.blockedUntil:
-                flash(f'Аккаунт заблокирован до {blocked_user.blockedUntil.strftime("%d.%m.%Y %H:%M")}', 'error')
-                return render_template('auth/login.html', captcha_passed=True, parts_order=parts_order) # Путь к шаблону
-
-            # Проверяем логин и пароль
-            user = User.query.filter(
-                User.username == username,
-                User.passwordHash == password_hash
-            ).first()
-
-            if user and user.isBlocked == 'false':
-                # Успешный вход
-                user.loginAttempts = 0
-                user.lastLoginAttempt = None
-                user.blockedUntil = None
-                db.session.commit()
-                session.permanent = False
-                login_user(user, remember=False)
-                return redirect(url_for('dashboard'))
-            else:
-                # Неудачная попытка — только если пользователь существует
-                user = User.query.filter_by(username=username).first()
-                if user:
+                # Проверяем логин и пароль
+                if password_valid and user.isBlocked == 'false':
+                    # Успешный вход
+                    user.loginAttempts = 0
+                    user.lastLoginAttempt = None
+                    user.blockedUntil = None
+                    db.session.commit()
+                    session.permanent = False
+                    login_user(user, remember=False)
+                    return redirect(url_for('dashboard'))
+                else:
+                    # Неудачная попытка — только если пользователь существует
                     user.loginAttempts = (user.loginAttempts or 0) + 1
                     user.lastLoginAttempt = datetime.now()
                     if user.loginAttempts >= 3:
@@ -2494,11 +2494,12 @@ def login():
                             flash('Аккаунт заблокирован навсегда!', 'error')
                     else:
                         flash(f'Неверный логин или пароль! Попытка {user.loginAttempts} из 3', 'error')
-                else:
-                    # Если пользователя не существует — просто показываем ошибку
-                    flash('Неверный логин или пароль!', 'error')
-                db.session.commit()
-                # Капча уже пройдена, не требуем снова
+                    db.session.commit()
+                    # Капча уже пройдена, не требуем снова
+                    return render_template('auth/login.html', captcha_passed=True, parts_order=parts_order)
+            else:
+                # Если пользователя не существует — просто показываем ошибку
+                flash('Неверный логин или пароль!', 'error')
                 return render_template('auth/login.html', captcha_passed=True, parts_order=parts_order)
 
         # Если отправлена капча (а не логин/пароль)
