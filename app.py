@@ -2060,7 +2060,7 @@ def view_user(user_id):
     return render_template('admin/view_user.html', user=user, current_user_obj=current_user)
 
 # Маршрут: Админ панель блокировка пользователя
-@app.route('/admin/user/<int:user_id>/toggle_block', methods=['POST'])
+@app.route('/admin/users/<int:user_id>/toggle_block', methods=['POST'])
 @login_required
 def toggle_user_block(user_id):
     if current_user.role != 'admin':
