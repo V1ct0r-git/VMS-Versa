@@ -105,10 +105,10 @@ MODULES = {
 
 # Информация о системных требованиях
 SYSTEM_REQUIREMENTS = {
-    'os': platform.system(),
-    'os_version': platform.release(),
+    'os': 'Linux Mint',
+    'os_version': '22.0 or later',
     'architecture': platform.architecture()[0],
-    'processor': platform.processor(),
+    'processor': 'Intel Core i3-10100 or equivalent',
     'python_version': sys.version_info,
     'memory': 'Не менее 2 ГБ RAM',
     'disk_space': 'Не менее 500 МБ свободного места',
