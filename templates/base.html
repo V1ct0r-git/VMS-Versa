@@ -13,8 +13,7 @@
     <nav class="navbar">
         <div class="nav-left">
             <div class="nav-title">
-                <i class="fas fa-truck"></i>
-                <span>Верса</span>
+                <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Верса" class="nav-logo">
             </div>
             <button class="nav-toggle-btn" id="navToggle" title="Показать/скрыть меню">
                 <i class="fas fa-bars"></i>
@@ -124,8 +123,7 @@
         <div class="footer-content">
             <div class="footer-info">
                 <div class="footer-logo">
-                    <i class="fas fa-truck"></i>
-                    <span>Верса</span>
+                    <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Верса" class="footer-logo-img">
                 </div>
                 <p>Система автоматизации учёта технического обслуживания грузовых автомобилей v{{ system_info.system.version }}</p>
             </div>
