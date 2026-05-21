@@ -27,9 +27,13 @@
 }
 
 .auth-logo {
-    font-size: 2.5rem;
-    color: #007bff;
     margin-bottom: 0.5rem;
+}
+
+.auth-logo-img {
+    width: 150px;
+    height: auto;
+    object-fit: contain;
 }
 
 .auth-header h1 {

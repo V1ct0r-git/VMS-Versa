@@ -11,12 +11,16 @@
 <body>
     <!-- Навигационная панель -->
     <nav class="navbar">
-        <div class="nav-title">
-            <i class="fas fa-truck"></i>
-            <span>Верса</span>
+        <div class="nav-left">
+            <div class="nav-title">
+                <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Верса" class="nav-logo">
+            </div>
+            <button class="nav-toggle-btn" id="navToggle" title="Показать/скрыть меню">
+                <i class="fas fa-bars"></i>
+            </button>
         </div>
 
-        <div class="nav-links">
+        <div class="nav-links" id="navLinks">
             {% if current_user.role in ['admin', 'manager', 'mechanic'] %}
             <a href="/dashboard" class="nav-link {{ 'active' if request.path == '/dashboard' else '' }}">
                 <i class="fas fa-tachometer-alt"></i>
@@ -118,10 +122,6 @@
     <footer>
         <div class="footer-content">
             <div class="footer-info">
-                <div class="footer-logo">
-                    <i class="fas fa-truck"></i>
-                    <span>Верса</span>
-                </div>
                 <p>Система автоматизации учёта технического обслуживания грузовых автомобилей v{{ system_info.system.version }}</p>
             </div>
             <div class="footer-links">
@@ -130,9 +130,6 @@
                 <a href="/contact">Контакты</a>
                 <a href="/system-info">Информация о системе</a>
             </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2025 {{ system_info.system.company }}. Все права защищены. v{{ system_info.system.version }}</p>
         </div>
     </footer>
 
@@ -156,6 +153,23 @@
                     }
                 }
             });
+
+            // Переключение видимости навигационных кнопок
+            const navToggle = document.getElementById('navToggle');
+            const navLinks = document.getElementById('navLinks');
+            
+            if (navToggle && navLinks) {
+                navToggle.addEventListener('click', function() {
+                    navLinks.classList.toggle('show');
+                });
+
+                // Закрытие меню при клике вне его
+                document.addEventListener('click', function(e) {
+                    if (!e.target.closest('.nav-links') && !e.target.closest('.nav-toggle-btn')) {
+                        navLinks.classList.remove('show');
+                    }
+                });
+            }
         });
     </script>
 </body>

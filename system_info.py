@@ -8,12 +8,12 @@ from datetime import datetime
 # Основная информация о системе
 SYSTEM_INFO = {
     'name': 'Верса',
-    'version': '0.2.1',
+    'version': '0.2.2',
     'full_name': 'Система автоматизации учёта технического обслуживания грузовых автомобилей',
     'description': 'Современная система управления автотранспортом, разработанная для эффективного контроля за техническим состоянием транспортных средств, планирования технического обслуживания и управления механиками.',
-    'development_status': 'alpha',
-    'release_date': 'xxxx-xx-xx',
-    'last_update': '2025-11-18',
+    'development_status': 'пререлиз',
+    'release_date': '01.06.2026',
+    'last_update': '21.05.2026',
     'license': 'Proprietary',
     'author': 'Шлегель Виктор Алексеевич',
     'company': 'Верса',
@@ -36,23 +36,10 @@ TECHNOLOGY_VERSIONS = {
     'werkzeug': '2.3.7',
     'chartjs': '4.4.0',
     'font_awesome': '6.0.0',
+    'bcrypt': '4.0.1',
     'apscheduler': '3.10.4',
     'requests': '2.31.0'
 }
-
-# Информация о зависимостях
-DEPENDENCIES = [
-    'Flask==2.3.3',
-    'Flask-Login==0.6.3',
-    'Flask-SQLAlchemy==3.0.5',
-    'PyMySQL==1.1.0',
-    'SQLAlchemy==2.0.21',
-    'Werkzeug==2.3.7',
-    'Jinja2==3.1.2',
-    'python-dotenv==1.0.0',
-    'APScheduler==3.10.4',
-    'requests==2.31.0'
-]
 
 # Информация о модулях системы
 MODULES = {
@@ -105,10 +92,10 @@ MODULES = {
 
 # Информация о системных требованиях
 SYSTEM_REQUIREMENTS = {
-    'os': platform.system(),
-    'os_version': platform.release(),
+    'os': 'Linux Mint',
+    'os_version': '22.0 or later',
     'architecture': platform.architecture()[0],
-    'processor': platform.processor(),
+    'processor': 'Intel Core i3-10100 or equivalent',
     'python_version': sys.version_info,
     'memory': 'Не менее 2 ГБ RAM',
     'disk_space': 'Не менее 500 МБ свободного места',
@@ -131,7 +118,6 @@ def get_system_info():
     return {
         'system': SYSTEM_INFO,
         'technology_versions': TECHNOLOGY_VERSIONS,
-        'dependencies': DEPENDENCIES,
         'modules': MODULES,
         'requirements': SYSTEM_REQUIREMENTS,
         'license': LICENSE_INFO

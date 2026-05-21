@@ -7,7 +7,7 @@
     <!-- Заголовок страницы -->
     <div class="page-header">
         <div class="page-title-section">
-            <h1 class="card-title"><i class="fas fa-truck"></i> Список транспортных средств</h1>
+            <h1 class="card-title"><img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Верса" class="page-logo"> Список транспортных средств</h1>
             <p class="page-subtitle">Управление и отслеживание автопарка</p>
         </div>
         <div class="page-actions">
@@ -286,7 +286,7 @@
         
         {% else %}
         <div class="no-data">
-            <i class="fas fa-truck-loading"></i>
+            <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Верса" class="no-data-logo">
             <h3>Транспортные средства не найдены</h3>
             <p>Попробуйте изменить параметры фильтрации или добавьте новый автомобиль</p>
             <button class="btn btn-primary" onclick="addVehicle()">

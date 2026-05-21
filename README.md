@@ -25,17 +25,17 @@
 - Jinja2
 - APScheduler
 - Requests
+- Bcrypt
 
 ## Версия
 
-0.2.1 (alpha)
+0.2.2 (Prerelease)
 
 ## Установка
 
 1. Клонируй репозиторий
 2. Установи зависимости: `pip install -r requirements.txt`
-3. Настрой базу данных
-4. Запусти: `python app.py`
+3. Запусти: `python app.py`
 
 ## Лицензия
 
