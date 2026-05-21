@@ -2315,8 +2315,20 @@ def password_settings():
         new_password = request.form['new_password']
         confirm_password = request.form['confirm_password']
         
-        # Проверяем старый пароль
-        if not bcrypt.checkpw(old_password.encode('utf-8'), current_user.passwordHash.encode('utf-8')):
+        # Проверяем старый пароль (поддержка bcrypt и md5 для обратной совместимости)
+        password_valid = False
+        try:
+            # Сначала пробуем bcrypt
+            if bcrypt.checkpw(old_password.encode('utf-8'), current_user.passwordHash.encode('utf-8')):
+                password_valid = True
+        except (ValueError, TypeError):
+            # Если bcrypt не подходит (например, старый MD5-хэш), пробуем MD5
+            import hashlib
+            password_hash_md5 = hashlib.md5(old_password.encode('utf-8')).hexdigest()
+            if current_user.passwordHash == password_hash_md5:
+                password_valid = True
+        
+        if not password_valid:
             flash('Неверный старый пароль!', 'error')
             return render_template('settings/security.html', 
                                  username=current_user.fullName,
