@@ -25,6 +25,7 @@
 - Jinja2
 - APScheduler
 - Requests
+- Bcrypt
 
 ## Версия
 
