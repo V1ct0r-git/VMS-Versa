@@ -11,12 +11,17 @@
 <body>
     <!-- Навигационная панель -->
     <nav class="navbar">
-        <div class="nav-title">
-            <i class="fas fa-truck"></i>
-            <span>Верса</span>
+        <div class="nav-left">
+            <div class="nav-title">
+                <i class="fas fa-truck"></i>
+                <span>Верса</span>
+            </div>
+            <button class="nav-toggle-btn" id="navToggle" title="Показать/скрыть меню">
+                <i class="fas fa-bars"></i>
+            </button>
         </div>
 
-        <div class="nav-links">
+        <div class="nav-links" id="navLinks">
             {% if current_user.role in ['admin', 'manager', 'mechanic'] %}
             <a href="/dashboard" class="nav-link {{ 'active' if request.path == '/dashboard' else '' }}">
                 <i class="fas fa-tachometer-alt"></i>
@@ -156,6 +161,23 @@
                     }
                 }
             });
+
+            // Переключение видимости навигационных кнопок
+            const navToggle = document.getElementById('navToggle');
+            const navLinks = document.getElementById('navLinks');
+            
+            if (navToggle && navLinks) {
+                navToggle.addEventListener('click', function() {
+                    navLinks.classList.toggle('show');
+                });
+
+                // Закрытие меню при клике вне его
+                document.addEventListener('click', function(e) {
+                    if (!e.target.closest('.nav-links') && !e.target.closest('.nav-toggle-btn')) {
+                        navLinks.classList.remove('show');
+                    }
+                });
+            }
         });
     </script>
 </body>
