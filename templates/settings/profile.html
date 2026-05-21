@@ -63,14 +63,6 @@
                         'manager': 'Менеджер'
                     }[current_user_obj.role] }}</span>
                 </div>
-                <div class="info-item">
-                    <label>Дата регистрации:</label>
-                    <span>{{ current_user_obj.registrationDate.strftime('%d.%m.%Y %H:%M') if current_user_obj.registrationDate else 'Не указана' }}</span>
-                </div>
-                <div class="info-item">
-                    <label>Последний вход:</label>
-                    <span>{{ current_user_obj.lastLogin.strftime('%d.%m.%Y %H:%M') if current_user_obj.lastLogin else 'Не указана' }}</span>
-                </div>
             </div>
         </div>
     </div>
