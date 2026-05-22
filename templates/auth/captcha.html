@@ -24,13 +24,72 @@
 
 <script>
 let draggedElement = null;
+let selectedElement = null; // Для поддержки тапов на мобильных
 
 function drag(ev) {
     draggedElement = ev.target.closest('.captcha-piece');
     ev.dataTransfer.setData("text/plain", "");
 }
 
+// Функция для обработки тапа/клика по элементу
+function handlePieceClick(piece) {
+    if (!selectedElement) {
+        // Первый тап - выбираем элемент
+        selectedElement = piece;
+        piece.classList.add('selected');
+    } else {
+        // Второй тап - меняем местами
+        if (selectedElement === piece) {
+            // Тапнули по тому же элементу - снимаем выделение
+            selectedElement.classList.remove('selected');
+            selectedElement = null;
+        } else {
+            // Тапнули по другому элементу - меняем местами
+            const slot1 = selectedElement.parentElement;
+            const slot2 = piece.parentElement;
+            
+            slot1.appendChild(piece);
+            slot2.appendChild(selectedElement);
+            
+            selectedElement.classList.remove('selected');
+            selectedElement = null;
+        }
+    }
+}
+
+// Функция для обработки тапа/клика по слоту
+function handleSlotClick(slot) {
+    const pieceInSlot = slot.querySelector('.captcha-piece');
+    
+    if (!selectedElement) {
+        // Если нет выбранного элемента и в слоте есть элемент - ничего не делаем
+        // (пользователь должен тапнуть по самому элементу)
+        return;
+    }
+    
+    if (pieceInSlot) {
+        // В слоте есть элемент - меняем местами
+        const currentSlot = selectedElement.parentElement;
+        
+        currentSlot.appendChild(pieceInSlot);
+        slot.appendChild(selectedElement);
+        
+        selectedElement.classList.remove('selected');
+        selectedElement = null;
+    } else {
+        // Слот пустой - перемещаем выбранный элемент
+        const currentSlot = selectedElement.parentElement;
+        currentSlot.appendChild(selectedElement.cloneNode(true));
+        selectedElement.remove();
+        slot.appendChild(selectedElement);
+        
+        selectedElement.classList.remove('selected');
+        selectedElement = null;
+    }
+}
+
 document.querySelectorAll('.captcha-slot').forEach(slot => {
+    // Drag and drop события для десктопа
     slot.addEventListener('dragover', function(e) {
         e.preventDefault();
     });
@@ -60,6 +119,27 @@ document.querySelectorAll('.captcha-slot').forEach(slot => {
             }
             draggedElement = null;
         }
+    });
+    
+    // Touch/click события для мобильных устройств
+    slot.addEventListener('click', function(e) {
+        const targetPiece = e.target.closest('.captcha-piece');
+        
+        if (targetPiece) {
+            // Клик по элементу
+            handlePieceClick(targetPiece);
+        } else {
+            // Клик по пустому слоту
+            handleSlotClick(slot);
+        }
+    });
+});
+
+// Добавляем обработчики кликов к элементам капчи
+document.querySelectorAll('.captcha-piece').forEach(piece => {
+    piece.addEventListener('click', function(e) {
+        e.stopPropagation(); // Чтобы не срабатывал клик по слоту
+        handlePieceClick(this);
     });
 });
 

@@ -112,6 +112,13 @@
     cursor: grabbing;
 }
 
+/* Стили для выбранного элемента (тап на мобильных) */
+.captcha-piece.selected {
+    outline: 3px solid #007bff;
+    outline-offset: -3px;
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+}
+
 #check-captcha-btn {
     margin-top: 1rem;
 }
