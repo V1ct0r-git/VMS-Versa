@@ -15,9 +15,11 @@
             <a href="{{ url_for('vehicles') }}" class="btn btn-outline">
                 <i class="fas fa-arrow-left"></i> Назад к списку
             </a>
-            <a href="{{ url_for('edit_vehicle', car_id=car['CarID']) }}" class="btn btn-primary">
-                <i class="fas fa-edit"></i> Редактировать
-            </a>
+            {% if current_user.role in ['admin', 'mechanic'] %}
+                <a href="{{ url_for('edit_vehicle', car_id=car['CarID']) }}" class="btn btn-primary">
+                    <i class="fas fa-edit"></i> Редактировать
+                </a>
+            {% endif %}
         </div>
     </div>
 
@@ -105,10 +107,12 @@
                     <i class="fas fa-tools"></i>
                     <span>История ТО</span>
                 </a>
-                <a href="{{ url_for('add_maintenance') }}?car_id={{ car['CarID'] }}" class="action-btn">
-                    <i class="fas fa-plus-circle"></i>
-                    <span>Добавить ТО</span>
-                </a>
+                {% if current_user.role in ['admin', 'mechanic'] %}
+                    <a href="{{ url_for('add_maintenance') }}?car_id={{ car['CarID'] }}" class="action-btn">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Добавить ТО</span>
+                    </a>
+                {% endif %}
                 </div>
             </div>
         </div>

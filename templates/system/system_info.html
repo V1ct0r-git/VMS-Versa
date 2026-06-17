@@ -76,24 +76,6 @@
             </div>
         </div>
 
-        <!-- Модули системы -->
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Модули системы</h3>
-            </div>
-            <div class="card-body">
-                <div class="modules-grid">
-                    {% for module_key, module_info in system_info.modules.items() %}
-                        <div class="module-card">
-                            <h4>{{ module_info.name }}</h4>
-                            <p class="module-version">Версия: {{ module_info.version }}</p>
-                            <p class="module-description">{{ module_info.description }}</p>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-
         <!-- Системные требования -->
         <div class="card">
             <div class="card-header">
@@ -124,37 +106,6 @@
                     <div class="requirement-item">
                         <label>Дисковое пространство:</label>
                         <span>{{ system_info.requirements.disk_space }}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Лицензия -->
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Лицензирование</h3>
-            </div>
-            <div class="card-body">
-                <div class="license-info">
-                    <div class="info-item">
-                        <label>Тип лицензии:</label>
-                        <span>{{ system_info.license.type }}</span>
-                    </div>
-                    <div class="info-item">
-                        <label>Использование:</label>
-                        <span>{{ system_info.license.usage }}</span>
-                    </div>
-                    <div class="info-item">
-                        <label>Распространение:</label>
-                        <span>{{ system_info.license.distribution }}</span>
-                    </div>
-                    <div class="info-item">
-                        <label>Поддержка:</label>
-                        <span>{{ system_info.license.support }}</span>
-                    </div>
-                    <div class="info-item">
-                        <label>Обновления:</label>
-                        <span>{{ system_info.license.updates }}</span>
                     </div>
                 </div>
             </div>

@@ -14,16 +14,18 @@
             <h1 class="card-title"><i class="fas fa-wrench"></i> Техническое обслуживание</h1>
             <p class="page-subtitle">Управление и отслеживание работ по техническому обслуживанию</p>
         </div>
-        <div class="page-actions">
-            <a href="{{ url_for('maintenance_types') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-cog"></i>
-                Управление типами ТО
-            </a>
-            <a href="{{ url_for('add_maintenance') }}" class="btn btn-primary">
-                <i class="fas fa-plus"></i>
-                Добавить запись ТО
-            </a>
-        </div>
+        {% if current_user.role in ['admin', 'manager'] %}
+            <div class="page-actions">
+                <a href="{{ url_for('maintenance_types') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-cog"></i>
+                    Управление типами ТО
+                </a>
+                <a href="{{ url_for('add_maintenance') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Добавить запись ТО
+                </a>
+            </div>
+        {% endif %}
     </div>
 
     <!-- Статистика -->

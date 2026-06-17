@@ -1352,7 +1352,9 @@ def reminders():
             query = query.filter(Reminder.isSent == 'false')
 
         # Фильтр: только для незавершенных ТО (если show_completed не true)
-        if not show_completed:
+        if show_completed:
+            query = query.filter(Maintenance.completeDate.isnot(None))
+        else:
             query = query.filter(Maintenance.completeDate.is_(None))
     else:
         # Для не-механиков: используем обычный запрос
@@ -1369,9 +1371,10 @@ def reminders():
         elif is_sent == 'false':
             query = query.filter(Reminder.isSent == 'false')
 
-        # --- НОВОЕ: Фильтр show_completed для НЕ-механиков ---
         # Применяется к основному запросу для администраторов/менеджеров
-        if not show_completed:
+        if show_completed:
+            query = query.filter(Maintenance.completeDate.isnot(None))
+        else:
             query = query.filter(Maintenance.completeDate.is_(None))
 
     # --- Обычные фильтры (работают для всех, включая механиков) ---
@@ -1412,7 +1415,6 @@ def reminders():
     total = query.count()
     print(f"DEBUG: Общее количество после фильтрации: {total}") # Отладка
 
-    # --- НОВОЕ: Используем paginate вместо offset/limit ---
     # Получаем объект пагинации
     reminders_pagination = query.paginate(
         page=page,
@@ -1429,8 +1431,10 @@ def reminders():
             stats_query = stats_query.filter(Reminder.isRead == 'true')
         elif is_read == 'false':
             stats_query = stats_query.filter(Reminder.isRead == 'false')
-        if not show_completed: # Статистика для механика тоже учитывает его фильтр
-             stats_query = stats_query.filter(Maintenance.completeDate.is_(None))
+        if show_completed:
+            stats_query = stats_query.filter(Maintenance.completeDate.isnot(None))
+        else:
+            stats_query = stats_query.filter(Maintenance.completeDate.is_(None))
         if is_sent == 'true':
             stats_query = stats_query.filter(Reminder.isSent == 'true')
         elif is_sent == 'false':
@@ -1470,8 +1474,9 @@ def reminders():
         if date_to:
             stats_query = stats_query.filter(Reminder.remindDate <= date_to)
 
-        # --- НОВОЕ: Фильтр show_completed для статистики НЕ-механиков ---
-        if not show_completed:
+        if show_completed:
+            stats_query = stats_query.filter(Maintenance.completeDate.isnot(None))
+        else:
             stats_query = stats_query.filter(Maintenance.completeDate.is_(None))
 
         stats = {
@@ -1485,7 +1490,7 @@ def reminders():
     return render_template('reminders/reminders.html',
                            reminders=reminders_pagination,
                            stats=stats,
-                           type_filter='', # Убрано
+                           type_filter='',
                            priority=priority,
                            is_read=is_read,
                            is_sent=is_sent,
@@ -1740,7 +1745,7 @@ def generate_report_handler():
                 row_dict = dict(row)
                 category = row_dict.get('category')
                 month_year = row_dict.get('month_year')
-                total_cost = float(row_dict.get('total_cost', 0))
+                total_cost = float(row_dict.get('total_cost') or 0)
 
                 if category == 'Maintenance':
                     maintenance_data[month_year] = total_cost

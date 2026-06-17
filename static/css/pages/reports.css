@@ -420,3 +420,81 @@
         font-size: 0.9rem;
     }
 }
+
+/* Скрытие контента ТОЛЬКО на главной странице статистики на мобильных */
+@media screen and (max-width: 768px) {
+  /* Скрываем все карточки статистики, графики и таблицы */
+  body:has(.stats-container) .stats-container,
+  body:has(.stats-container) .charts-grid,
+  body:has(.stats-container) .card:has(.data-table),
+  body:has(.stats-container) .card:has(.charts-grid),
+  body:has(.stats-container) .report-cards-grid {
+    display: none !important;
+  }
+  
+  /* Показываем сообщение о недоступности */
+  body:has(.stats-container) .mobile-notice {
+    display: block !important;
+    text-align: center;
+    padding: 2rem 1rem;
+    background: white;
+    border-radius: 8px;
+    margin: 2rem auto;
+    max-width: 400px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  body:has(.stats-container) .mobile-notice h2 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+  }
+  
+  body:has(.stats-container) .mobile-notice p {
+    color: #7f8c8d;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+  }
+  
+  body:has(.stats-container) .mobile-notice i {
+    font-size: 4rem;
+    color: #3498db;
+    margin-bottom: 1rem;
+    display: block;
+  }
+  
+  /* Компактная кнопка */
+  body:has(.stats-container) .mobile-notice .btn {
+    display: inline-block;
+    padding: 8px 20px;
+    background: #3498db;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: 600;
+    transition: background 0.2s;
+    width: auto;
+    min-width: 150px;
+    height: 38px;
+    line-height: 22px;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+  }
+  
+  body:has(.stats-container) .mobile-notice .btn:hover {
+    background: #2980b9;
+  }
+}
+
+/* По умолчанию скрываем сообщение */
+.mobile-notice {
+  display: none;
+}
+
+/* На планшетах и десктопах скрываем сообщение */
+@media screen and (min-width: 769px) {
+  .mobile-notice {
+    display: none !important;
+  }
+}

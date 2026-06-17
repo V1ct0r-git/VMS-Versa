@@ -15,7 +15,7 @@
         <p class="text-muted">Аналитика и статистика по автопарку и техническому обслуживанию</p>
     </div>
 
-    <div class="settings-grid"> <!-- Используем тот же класс, что и в настройках -->
+    <div class="settings-grid">
         <!-- Боковая панель (меню отчётов) -->
         <div class="settings-sidebar">
             <div class="settings-menu">
@@ -35,15 +35,16 @@
                     <i class="fas fa-clipboard-list"></i>
                     <span>Журнал работ</span>
                 </a>
+                <!-- 
                 <a href="{{ url_for('report_costs_by_period') }}" class="settings-menu-item {% if active_report == 'costs_by_period' %}active{% endif %}">
                     <i class="fas fa-money-bill-wave"></i>
                     <span>Затраты за период</span>
                 </a>
+                 -->
                 <a href="{{ url_for('report_fleet_summary') }}" class="settings-menu-item {% if active_report == 'fleet_summary' %}active{% endif %}">
-                    <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Верса" class="menu-logo">
+                    <i class="fas fa-car"></i>
                     <span>Сводка по автопарку</span>
                 </a>
-                <!-- Добавь другие отчёты по мере реализации -->
             </div>
         </div>
 

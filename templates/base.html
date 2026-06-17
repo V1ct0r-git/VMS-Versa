@@ -26,16 +26,12 @@
                 <i class="fas fa-tachometer-alt"></i>
                 <span>Дашборд</span>
             </a>
-            {% endif %}
 
-            {% if current_user.role in ['admin', 'manager', 'mechanic'] %}
             <a href="/vehicles" class="nav-link {{ 'active' if request.path == '/vehicles' else '' }}">
                 <i class="fas fa-car"></i>
                 <span>Транспорт</span>
             </a>
-            {% endif %}
 
-            {% if current_user.role in ['admin', 'mechanic'] %}
             <a href="/maintenance" class="nav-link {{ 'active' if request.path == '/maintenance' else '' }}">
                 <i class="fas fa-wrench"></i>
                 <span>ТО</span>
@@ -76,7 +72,9 @@
                     <i class="fas fa-user"></i>
                 </div>
                 <div class="user-details">
-                    <span class="username">{{ current_user.fullName }}</span>
+                    <span class="username" title="{{ current_user.fullName }}">
+                        {{ current_user.fullName.split()[0] }} {{ current_user.fullName.split()[1][0] }}.
+                    </span>
                     <span class="user-role">{{ current_user.role }}</span>
                 </div>
                 <div class="user-dropdown">
@@ -122,11 +120,9 @@
     <footer>
         <div class="footer-content">
             <div class="footer-info">
-                <p>Система автоматизации учёта технического обслуживания грузовых автомобилей v{{ system_info.system.version }}</p>
+                <p>v{{ system_info.system.version }}</p>
             </div>
             <div class="footer-links">
-                <a href="/about">О системе</a>
-                <a href="/help">Помощь</a>
                 <a href="/contact">Контакты</a>
                 <a href="/system-info">Информация о системе</a>
             </div>
